@@ -1,6 +1,6 @@
 import React from "react";
 
-import { LoginForm } from "../component/loginform";
+import { LoginForm } from "../../component/loginform";
 // import Image from "react";
 export const LandingPage = () => {
  

@@ -1,5 +1,5 @@
 import React from "react"
-import { LandingPage } from "./login/LandingPage"
+import { LandingPage } from "./pages/login/LandingPage";
 
 const Layout = () => {
     return (

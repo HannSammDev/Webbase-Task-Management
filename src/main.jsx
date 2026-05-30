@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
 import "./index.css";
 import Layout from "./Layout";
-import { Dash_Board } from "./Dashboard/dashboard";
+import { Dash_Board } from "./pages/Dashboard/dashboard";
 
 const App = () => (
   <PrimeReactProvider>
