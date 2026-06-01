@@ -16,6 +16,7 @@ import {
 import { Totals } from "../../component/Totals";
 import { RecentActivity } from "../../component/RecentActivity";
 import { Calendar } from "../../component/Calendar";
+import { MyTask } from "./MyTask";
 import { Kanban } from "./Kanban";
 export const Dash_Board = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -888,11 +889,12 @@ export const Dash_Board = () => {
             <RecentActivity />
             <Calendar />
             {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div> */}
-            <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
-            <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
+            {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
+            <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div> */}
           </div>
           {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-96 mb-4"></div> */}
-            <Kanban/>
+            <MyTask />
+          <Kanban />
           <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-96 mb-4"></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>

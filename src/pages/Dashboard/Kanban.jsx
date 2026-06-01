@@ -1,75 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { TabView, TabPanel } from "primereact/tabview";
-
-const styles = `
-  @media (max-width: 768px) {
-    .kanban-board {
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 8px !important;
-    }
-    .kanban-column {
-      padding: 8px !important;
-    }
-  }
-  @media (max-width: 480px) {
-    .kanban-board {
-      grid-template-columns: 1fr !important;
-      gap: 8px !important;
-    }
-    .kanban-column {
-      padding: 6px !important;
-    }
-    .list-table {
-      font-size: 12px !important;
-    }
-    .list-table th, .list-table td {
-      padding: 6px 4px !important;
-    }
-    .list-table .hide-mobile {
-      display: none !important;
-    }
-    .kanban-header {
-      font-size: 13px !important;
-    }
-  }
-`;
-
-if (typeof document !== "undefined") {
-  const styleSheet = document.createElement("style");
-  styleSheet.textContent = styles;
-  if (!document.head.querySelector("style[data-kanban]")) {
-    styleSheet.setAttribute("data-kanban", "true");
-    document.head.appendChild(styleSheet);
-  }
-}
 
 const INITIAL_COLUMNS = [
   {
     id: "pending",
     label: "Pending",
+    dotColor: "bg-yellow-400",
     cards: [
       {
         id: 1,
         title: "Design new landing page",
         tag: "Design",
-        tagColor: "#1D4ED8",
-        tagBg: "#DBEAFE",
+        tagClass: "bg-blue-100 text-blue-800",
         assignee: "AJ",
       },
       {
         id: 2,
         title: "Set up CI/CD pipeline",
         tag: "DevOps",
-        tagColor: "#92400E",
-        tagBg: "#FEF3C7",
+        tagClass: "bg-amber-100 text-amber-800",
         assignee: "KL",
       },
       {
         id: 3,
         title: "Write API documentation",
         tag: "Docs",
-        tagColor: "#065F46",
-        tagBg: "#D1FAE5",
+        tagClass: "bg-green-100 text-green-800",
         assignee: null,
       },
     ],
@@ -77,21 +33,20 @@ const INITIAL_COLUMNS = [
   {
     id: "inprogress",
     label: "In Progress",
+    dotColor: "bg-blue-400",
     cards: [
       {
         id: 4,
         title: "Build user auth module",
         tag: "Dev",
-        tagColor: "#1D4ED8",
-        tagBg: "#DBEAFE",
+        tagClass: "bg-blue-100 text-blue-800",
         assignee: "MR",
       },
       {
         id: 5,
         title: "User research interviews",
         tag: "Research",
-        tagColor: "#9D174D",
-        tagBg: "#FCE7F3",
+        tagClass: "bg-pink-100 text-pink-800",
         assignee: "SP",
       },
     ],
@@ -99,21 +54,20 @@ const INITIAL_COLUMNS = [
   {
     id: "review",
     label: "Review",
+    dotColor: "bg-purple-400",
     cards: [
       {
         id: 6,
         title: "Accessibility audit",
         tag: "QA",
-        tagColor: "#92400E",
-        tagBg: "#FEF3C7",
+        tagClass: "bg-amber-100 text-amber-800",
         assignee: "TW",
       },
       {
         id: 7,
         title: "Update privacy policy",
         tag: "Legal",
-        tagColor: "#065F46",
-        tagBg: "#D1FAE5",
+        tagClass: "bg-green-100 text-green-800",
         assignee: null,
       },
     ],
@@ -121,21 +75,20 @@ const INITIAL_COLUMNS = [
   {
     id: "completed",
     label: "Completed",
+    dotColor: "bg-green-400",
     cards: [
       {
         id: 8,
         title: "Migrate database schema",
         tag: "Dev",
-        tagColor: "#1D4ED8",
-        tagBg: "#DBEAFE",
+        tagClass: "bg-blue-100 text-blue-800",
         assignee: "KL",
       },
       {
         id: 9,
         title: "Create onboarding flow",
         tag: "Design",
-        tagColor: "#1D4ED8",
-        tagBg: "#DBEAFE",
+        tagClass: "bg-blue-100 text-blue-800",
         assignee: "AJ",
       },
     ],
@@ -146,48 +99,42 @@ const LIST_ROWS = [
   {
     title: "Design new landing page",
     status: "Pending",
-    statusColor: "#92400E",
-    statusBg: "#FEF3C7",
+    statusClass: "bg-amber-100 text-amber-800",
     tag: "Design",
     assignee: "AJ",
   },
   {
     title: "Build user auth module",
     status: "In Progress",
-    statusColor: "#1D4ED8",
-    statusBg: "#DBEAFE",
+    statusClass: "bg-blue-100 text-blue-800",
     tag: "Dev",
     assignee: "MR",
   },
   {
     title: "User research interviews",
     status: "In Progress",
-    statusColor: "#1D4ED8",
-    statusBg: "#DBEAFE",
+    statusClass: "bg-blue-100 text-blue-800",
     tag: "Research",
     assignee: "SP",
   },
   {
     title: "Accessibility audit",
     status: "Review",
-    statusColor: "#9D174D",
-    statusBg: "#FCE7F3",
+    statusClass: "bg-purple-100 text-purple-800",
     tag: "QA",
     assignee: "TW",
   },
   {
     title: "Migrate database schema",
     status: "Completed",
-    statusColor: "#065F46",
-    statusBg: "#D1FAE5",
+    statusClass: "bg-green-100 text-green-800",
     tag: "Dev",
     assignee: "KL",
   },
   {
     title: "Write API documentation",
     status: "Pending",
-    statusColor: "#92400E",
-    statusBg: "#FEF3C7",
+    statusClass: "bg-amber-100 text-amber-800",
     tag: "Docs",
     assignee: "—",
   },
@@ -233,216 +180,133 @@ const TIMELINE_ITEMS = [
 ];
 
 const Avatar = ({ initials }) => (
-  <div
-    style={{
-      width: 22,
-      height: 22,
-      borderRadius: "50%",
-      background: "#DBEAFE",
-      color: "#1D4ED8",
-      fontSize: 9,
-      fontWeight: 600,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
-    }}
-  >
+  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold flex items-center justify-center shrink-0">
     {initials}
   </div>
 );
 
-const Tag = ({ label, color, bg }) => (
+const Tag = ({ label, className }) => (
   <span
-    style={{
-      fontSize: 11,
-      fontWeight: 500,
-      padding: "2px 8px",
-      borderRadius: 999,
-      background: bg,
-      color,
-    }}
+    className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${className}`}
   >
     {label}
   </span>
 );
 
 const KanbanCard = ({ card }) => (
-  <div
-    style={{
-      background: "#fff",
-      border: "0.5px solid #E5E7EB",
-      borderRadius: 8,
-      padding: "10px 12px",
-      marginBottom: 8,
-      cursor: "pointer",
-      transition: "border-color .15s, box-shadow .15s",
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = "#9CA3AF";
-      e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,.06)";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = "#E5E7EB";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-  >
-    <p
-      style={{
-        fontSize: 13,
-        color: "#111827",
-        lineHeight: 1.45,
-        marginBottom: 8,
-      }}
-    >
-      {card.title}
-    </p>
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        flexWrap: "wrap",
-      }}
-    >
-      <Tag label={card.tag} color={card.tagColor} bg={card.tagBg} />
+  <div className="bg-white border border-gray-200 rounded-lg p-3 mb-2 cursor-pointer hover:border-gray-400 hover:shadow-sm transition-all duration-150">
+    <p className="text-[13px] text-gray-900 leading-snug mb-2">{card.title}</p>
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <Tag label={card.tag} className={card.tagClass} />
       {card.assignee && <Avatar initials={card.assignee} />}
     </div>
   </div>
 );
 
-const BoardView = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 480);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 480);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+// Mobile: accordion — one column open at a time
+const MobileBoardView = () => {
+  const [open, setOpen] = useState("pending");
   return (
-    <div
-      className="kanban-board"
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-        gap: 12,
-      }}
-    >
+    <div className="flex flex-col gap-2">
       {INITIAL_COLUMNS.map((col) => (
         <div
           key={col.id}
-          className="kanban-column"
-          style={{
-            background: "#F9FAFB",
-            borderRadius: 8,
-            padding: 10,
-          }}
+          className="border border-gray-200 rounded-lg overflow-hidden"
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 10,
-            }}
+          <button
+            className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-50 text-left"
+            onClick={() => setOpen(open === col.id ? null : col.id)}
           >
-            <span
-              style={{
-                fontSize: isMobile ? 10 : 11,
-                fontWeight: 600,
-                color: "#6B7280",
-                textTransform: "uppercase",
-                letterSpacing: ".05em",
-              }}
-            >
-              {col.label}
-            </span>
-            <span
-              style={{
-                fontSize: 10,
-                background: "#fff",
-                border: "0.5px solid #E5E7EB",
-                borderRadius: 999,
-                padding: "1px 7px",
-                color: "#6B7280",
-              }}
-            >
-              {col.cards.length}
-            </span>
-          </div>
-          {col.cards.map((card) => (
-            <KanbanCard key={card.id} card={card} />
-          ))}
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${col.dotColor}`} />
+              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                {col.label}
+              </span>
+              <span className="text-xs bg-white border border-gray-200 rounded-full px-2 text-gray-500">
+                {col.cards.length}
+              </span>
+            </div>
+            <i
+              className={`pi ${open === col.id ? "pi-chevron-up" : "pi-chevron-down"} text-gray-400 text-xs`}
+            />
+          </button>
+          {open === col.id && (
+            <div className="p-2 bg-gray-50">
+              {col.cards.map((card) => (
+                <KanbanCard key={card.id} card={card} />
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>
   );
 };
 
-const ListView = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 480);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 480);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  if (isMobile) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {LIST_ROWS.map((row, i) => (
-          <div
-            key={i}
-            style={{
-              background: "#F9FAFB",
-              border: "0.5px solid #E5E7EB",
-              borderRadius: 6,
-              padding: 10,
-              cursor: "pointer",
-              transition: "background .15s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#F3F4F6")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "#F9FAFB")}
-          >
-            <p
-              style={{
-                fontSize: 12,
-                fontWeight: 500,
-                color: "#111827",
-                marginBottom: 6,
-              }}
-            >
-              {row.title}
-            </p>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-              <Tag label={row.status} color={row.statusColor} bg={row.statusBg} />
-              <Tag label={row.tag} color="#374151" bg="#F3F4F6" />
-              <span style={{ fontSize: 11, color: "#6B7280" }}>{row.assignee}</span>
-            </div>
+// Desktop: 4-column grid
+const DesktopBoardView = () => (
+  <div className="grid grid-cols-4 gap-3">
+    {INITIAL_COLUMNS.map((col) => (
+      <div key={col.id} className="bg-gray-50 rounded-lg p-2.5">
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full ${col.dotColor}`} />
+            <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              {col.label}
+            </span>
           </div>
+          <span className="text-[11px] bg-white border border-gray-200 rounded-full px-1.5 py-px text-gray-500">
+            {col.cards.length}
+          </span>
+        </div>
+        {col.cards.map((card) => (
+          <KanbanCard key={card.id} card={card} />
         ))}
       </div>
-    );
-  }
+    ))}
+  </div>
+);
 
-  return (
-    <div style={{ overflowX: "auto" }}>
-      <table className="list-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+const BoardView = () => (
+  <>
+    <div className="block sm:hidden">
+      <MobileBoardView />
+    </div>
+    <div className="hidden sm:block">
+      <DesktopBoardView />
+    </div>
+  </>
+);
+
+const ListView = () => (
+  <>
+    {/* Mobile: stacked cards */}
+    <div className="flex flex-col gap-2 sm:hidden">
+      {LIST_ROWS.map((row, i) => (
+        <div key={i} className="border border-gray-200 rounded-lg p-3">
+          <p className="text-[13px] font-medium text-gray-900 mb-2">
+            {row.title}
+          </p>
+          <div className="flex flex-wrap gap-1.5 items-center">
+            <Tag label={row.status} className={row.statusClass} />
+            <Tag label={row.tag} className="bg-gray-100 text-gray-700" />
+            <span className="text-[11px] text-gray-400 ml-auto">
+              {row.assignee}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Desktop: table */}
+    <div className="hidden sm:block overflow-x-auto">
+      <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr>
             {["Task", "Status", "Tag", "Assignee"].map((h) => (
               <th
                 key={h}
-                style={{
-                  textAlign: "left",
-                  fontWeight: 500,
-                  fontSize: 12,
-                  color: "#6B7280",
-                  padding: "6px 10px",
-                  borderBottom: "0.5px solid #E5E7EB",
-                }}
+                className="text-left text-[12px] font-medium text-gray-500 px-3 py-2 border-b border-gray-100"
               >
                 {h}
               </th>
@@ -451,39 +315,17 @@ const ListView = () => {
         </thead>
         <tbody>
           {LIST_ROWS.map((row, i) => (
-            <tr
-              key={i}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#F9FAFB")}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = "transparent")
-              }
-            >
-              <td
-                style={{
-                  padding: "9px 10px",
-                  borderBottom: "0.5px solid #E5E7EB",
-                  color: "#111827",
-                }}
-              >
+            <tr key={i} className="hover:bg-gray-50 transition-colors">
+              <td className="px-3 py-2.5 border-b border-gray-100 text-gray-900">
                 {row.title}
               </td>
-              <td
-                style={{ padding: "9px 10px", borderBottom: "0.5px solid #E5E7EB" }}
-              >
-                <Tag label={row.status} color={row.statusColor} bg={row.statusBg} />
+              <td className="px-3 py-2.5 border-b border-gray-100">
+                <Tag label={row.status} className={row.statusClass} />
               </td>
-              <td
-                style={{ padding: "9px 10px", borderBottom: "0.5px solid #E5E7EB" }}
-              >
-                <Tag label={row.tag} color="#374151" bg="#F3F4F6" />
+              <td className="px-3 py-2.5 border-b border-gray-100">
+                <Tag label={row.tag} className="bg-gray-100 text-gray-700" />
               </td>
-              <td
-                style={{
-                  padding: "9px 10px",
-                  borderBottom: "0.5px solid #E5E7EB",
-                  color: "#6B7280",
-                }}
-              >
+              <td className="px-3 py-2.5 border-b border-gray-100 text-gray-500">
                 {row.assignee}
               </td>
             </tr>
@@ -491,153 +333,114 @@ const ListView = () => {
         </tbody>
       </table>
     </div>
-  );
-};
+  </>
+);
 
-const TimelineView = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 480);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 480);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return (
-    <div style={{ padding: isMobile ? "4px 0" : "8px 0" }}>
-      {TIMELINE_ITEMS.map((item, i) => (
-        <div
-          key={i}
-          style={{
-            display: "flex",
-            gap: isMobile ? 8 : 12,
-            marginBottom: i < TIMELINE_ITEMS.length - 1 ? (isMobile ? 14 : 20) : 0,
-          }}
-        >
+const TimelineView = () => (
+  <div className="py-2">
+    {TIMELINE_ITEMS.map((item, i) => (
+      <div
+        key={i}
+        className="flex gap-3"
+        style={{ marginBottom: i < TIMELINE_ITEMS.length - 1 ? 20 : 0 }}
+      >
+        <div className="flex flex-col items-center w-5">
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              width: isMobile ? 20 : 28,
-              flexShrink: 0,
-            }}
-          >
-            <div
-              style={{
-                width: isMobile ? 8 : 10,
-                height: isMobile ? 8 : 10,
-                borderRadius: "50%",
-                flexShrink: 0,
-                marginTop: 3,
-                background:
-                  item.state === "done"
-                    ? "#1D9E75"
-                    : item.state === "active"
-                      ? "#378ADD"
-                      : "#D1D5DB",
-              }}
-            />
-            {i < TIMELINE_ITEMS.length - 1 && (
-              <div
-                style={{
-                  width: 1,
-                  flex: 1,
-                  background: "#E5E7EB",
-                  marginTop: 4,
-                }}
-              />
-            )}
-          </div>
-          <div style={{ flex: 1, paddingBottom: 4, minWidth: 0 }}>
-            <p
-              style={{
-                fontSize: isMobile ? 12 : 13,
-                fontWeight: 500,
-                color: "#111827",
-                marginBottom: 2,
-                wordBreak: "break-word",
-              }}
-            >
-              {item.title}
-            </p>
-            <p
-              style={{
-                fontSize: isMobile ? 11 : 12,
-                color: "#6B7280",
-                wordBreak: "break-word",
-              }}
-            >
-              {item.label} · {item.date}
-            </p>
-          </div>
+            className={`w-2.5 h-2.5 rounded-full shrink-0 mt-0.5 ${
+              item.state === "done"
+                ? "bg-green-500"
+                : item.state === "active"
+                  ? "bg-blue-500"
+                  : "bg-gray-300"
+            }`}
+          />
+          {i < TIMELINE_ITEMS.length - 1 && (
+            <div className="w-px flex-1 bg-gray-200 mt-1" />
+          )}
         </div>
-      ))}
-    </div>
-  );
-};
+        <div className="flex-1 pb-1 min-w-0">
+          <p className="text-[13px] font-medium text-gray-900 leading-snug truncate">
+            {item.title}
+          </p>
+          <p className="text-[12px] text-gray-500 mt-0.5">
+            {item.label} · {item.date}
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export const Kanban = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 480);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 480);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
-    <div
-      style={{
-        border: "0.5px solid #E5E7EB",
-        borderRadius: 12,
-        background: "#fff",
-        marginBottom: 16,
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          padding: isMobile ? "10px 12px" : "14px 16px",
-          borderBottom: "0.5px solid #E5E7EB",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+    <div className="border border-gray-200 rounded-xl bg-white mb-4 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <i className="pi pi-th-large text-gray-400 text-sm" />
+          <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Kanban board
+          </span>
+        </div>
+        <button className="flex items-center gap-1 text-[12px] text-gray-500 hover:text-gray-800 border border-gray-200 rounded-md px-2.5 py-1 hover:bg-gray-50 transition-colors">
+          <i className="pi pi-plus text-[11px]" />
+          <span className="hidden sm:inline ml-0.5">Add task</span>
+        </button>
+      </div>
+
+      {/* TabView */}
+      <TabView
+        pt={{
+          root: { className: "w-full" },
+          nav: {
+            className:
+              "border-b border-gray-100 px-2 sm:px-4 flex overflow-x-auto",
+          },
+          inkbar: { className: "bg-gray-900" },
         }}
       >
-        <span
-          className="kanban-header"
-          style={{
-            fontSize: isMobile ? 13 : 15,
-            fontWeight: 500,
-            color: "#111827",
+        <TabPanel
+          header="Board"
+          leftIcon="pi pi-th-large"
+          pt={{
+            headerAction: {
+              className: "text-[13px] gap-1.5 py-2.5 px-3 whitespace-nowrap",
+            },
           }}
         >
-          Kanban board
-        </span>
-      </div>
+          <div className="p-3 sm:p-4">
+            <BoardView />
+          </div>
+        </TabPanel>
 
-      <div style={{ padding: isMobile ? "8px" : "0" }}>
-        <TabView>
-          <TabPanel header="Board" leftIcon="pi pi-th-large mr-2">
-            <div style={{ padding: isMobile ? "8px 0" : "0" }}>
-              <BoardView />
-            </div>
-          </TabPanel>
-          <TabPanel header="List" leftIcon="pi pi-list mr-2">
-            <div style={{ padding: isMobile ? "0 8px" : "0" }}>
-              <ListView />
-            </div>
-          </TabPanel>
-          <TabPanel header="Timeline" leftIcon="pi pi-clock mr-2">
-            <div style={{ padding: isMobile ? "8px" : "0" }}>
-              <TimelineView />
-            </div>
-          </TabPanel>
-        </TabView>
-      </div>
+        <TabPanel
+          header="List"
+          leftIcon="pi pi-list"
+          pt={{
+            headerAction: {
+              className: "text-[13px] gap-1.5 py-2.5 px-3 whitespace-nowrap",
+            },
+          }}
+        >
+          <div className="p-3 sm:p-4">
+            <ListView />
+          </div>
+        </TabPanel>
+
+        <TabPanel
+          header="Timeline"
+          leftIcon="pi pi-clock"
+          pt={{
+            headerAction: {
+              className: "text-[13px] gap-1.5 py-2.5 px-3 whitespace-nowrap",
+            },
+          }}
+        >
+          <div className="p-3 sm:p-4">
+            <TimelineView />
+          </div>
+        </TabPanel>
+      </TabView>
     </div>
   );
 };
-
-export default Kanban;
