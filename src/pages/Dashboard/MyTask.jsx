@@ -82,87 +82,90 @@ export const MyTask = () => {
   const tabs = ["All", "To do", "Doing", "Done"];
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg mb-4">
-      <span className="block text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 mt-6 px-4">
-        My Tasks
-      </span>
-      {/* Tabs */}
-      <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700 px-4">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`py-3 px-1 font-medium text-sm transition-colors border-b-2 ${
-              activeTab === tab
-                ? "text-gray-900 dark:text-white border-blue-500"
-                : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+    <>
+      {/* <div id="mytask" className="h-12"></div> */}
+      <div className="bg-white dark:bg-gray-900 rounded-lg mb-4">
+        <span className="block text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4 mt-6 px-4">
+          My Tasks
+        </span>
+        {/* Tabs */}
+        <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700 px-4">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`py-3 px-1 font-medium text-sm transition-colors border-b-2 ${
+                activeTab === tab
+                  ? "text-gray-900 dark:text-white border-blue-500"
+                  : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
 
-      {/* Task Table */}
+        {/* Task Table */}
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700">
-              <th className="w-12 px-6 py-4"></th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-                Task name
-              </th>
-              <th className="px-6 py-4 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
-                Priority
-              </th>
-              <th className="px-6 py-4 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTasks.map((task) => (
-              <tr
-                key={task.id}
-                className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-              >
-                <td className="px-6 py-4">
-                  <input
-                    type="checkbox"
-                    checked={checkedTasks.has(task.id)}
-                    onChange={() => toggleCheck(task.id)}
-                    className="w-4 h-4 rounded cursor-pointer"
-                  />
-                </td>
-                <td
-                  className={`px-6 py-4 text-sm text-gray-900 dark:text-gray-100 ${
-                    task.status === "Done"
-                      ? "line-through text-gray-400 dark:text-gray-500"
-                      : ""
-                  }`}
-                >
-                  {task.title}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span
-                    className={`text-sm font-medium ${getPriorityColor(task.priority)}`}
-                  >
-                    {task.priority}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span
-                    className={`text-sm font-medium ${getStatusColor(task.status)}`}
-                  >
-                    {task.status}
-                  </span>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700">
+                <th className="w-12 px-6 py-4"></th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Task name
+                </th>
+                <th className="px-6 py-4 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Priority
+                </th>
+                <th className="px-6 py-4 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Status
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredTasks.map((task) => (
+                <tr
+                  key={task.id}
+                  className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                >
+                  <td className="px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={checkedTasks.has(task.id)}
+                      onChange={() => toggleCheck(task.id)}
+                      className="w-4 h-4 rounded cursor-pointer"
+                    />
+                  </td>
+                  <td
+                    className={`px-6 py-4 text-sm text-gray-900 dark:text-gray-100 ${
+                      task.status === "Done"
+                        ? "line-through text-gray-400 dark:text-gray-500"
+                        : ""
+                    }`}
+                  >
+                    {task.title}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span
+                      className={`text-sm font-medium ${getPriorityColor(task.priority)}`}
+                    >
+                      {task.priority}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span
+                      className={`text-sm font-medium ${getStatusColor(task.status)}`}
+                    >
+                      {task.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 };

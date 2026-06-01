@@ -13,11 +13,13 @@ import {
   FiUsers,
   FiBell,
 } from "react-icons/fi";
-import { Totals } from "../../component/Totals";
-import { RecentActivity } from "../../component/RecentActivity";
-import { Calendar } from "../../component/Calendar";
-import { MyTask } from "./MyTask";
-import { Kanban } from "./Kanban";
+import { Totals } from "./component/Totals";
+import { RecentActivity } from "./component/RecentActivity";
+import { Calendar } from "./component/Calendar";
+import { MyTask } from "./pages/Dashboard/MyTask";
+import { Kanban } from "./pages/Dashboard/Kanban";
+import { AddTaskForm } from "./component/AddTaskForm";
+import { Outlet } from "react-router-dom";
 export const Dash_Board = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -103,7 +105,8 @@ export const Dash_Board = () => {
             </button> */}
             {/* Add task button */}
 
-            <Button label="Add Task" size="small" />
+            {/* <Button label="Add Task" size="small" /> */}
+            <AddTaskForm />
 
             <div
               className="hidden overflow-hidden z-50 my-4 max-w-sm text-base list-none bg-white rounded divide-y divide-gray-100 shadow-lg dark:divide-gray-600 dark:bg-gray-700 rounded-xl"
@@ -652,7 +655,7 @@ export const Dash_Board = () => {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="#"
+                  href="/overview"
                   className="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
                 >
                   <FiHome
@@ -664,7 +667,7 @@ export const Dash_Board = () => {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/mytask"
                   className="flex items-center p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                 >
                   <FiClipboard
@@ -677,7 +680,8 @@ export const Dash_Board = () => {
                 </a>
               </li>
               <li>
-                <button
+                <a
+                  href="/kanban"
                   type="button"
                   className="flex items-center p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
                   aria-controls="dropdown-sales"
@@ -690,7 +694,7 @@ export const Dash_Board = () => {
                   <span className="flex-1 ml-3 text-left whitespace-nowrap">
                     Kanban
                   </span>
-                </button>
+                </a>
               </li>
               <li>
                 <a
@@ -876,32 +880,33 @@ export const Dash_Board = () => {
         </aside>
 
         {/* Main content */}
-        <main className="p-4 md:ml-64 h-auto pt-20">
+        <main className="p-4 md:ml-64 h-auto pt-20" id="overview">
+          <Outlet />
           {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div className="border-2 border-dashed border-gray-300 rounded-lg dark:border-gray-600 h-32 md:h-64"></div>
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-32 md:h-64"></div>
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-32 md:h-64"></div>
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-32 md:h-64"></div>
           </div> */}
-          <Totals />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div> */}
-            <RecentActivity />
-            <Calendar />
-            {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div> */}
-            {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
+          {/* <Totals /> */}
+          {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"> */}
+          {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div> */}
+          {/* <RecentActivity /> */}
+          {/* <Calendar /> */}
+          {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div> */}
+          {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div> */}
-          </div>
+          {/* </div> */}
           {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-96 mb-4"></div> */}
-            <MyTask />
-          <Kanban />
-          <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-96 mb-4"></div>
+          {/* <MyTask /> */}
+          {/* <Kanban /> */}
+          {/* <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-96 mb-4"></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
             <div className="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
-          </div>
+          </div> */}
         </main>
       </div>
     </>

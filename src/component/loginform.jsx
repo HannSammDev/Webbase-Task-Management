@@ -85,7 +85,7 @@ export const LoginForm = () => {
             </div>
 
             <Button
-              onClick={() => navigate("/dashboard") }
+              onClick={() => navigate("/overview")}
               type="submit"
               label="Sign In"
               severity="info"
