@@ -1,5 +1,7 @@
-import { Divider } from "primereact/divider";
 import React from "react";
+import { Divider } from "primereact/divider";
+
+
 import {
   FiCheckCircle,
   FiPlusCircle,
@@ -8,6 +10,7 @@ import {
 } from "react-icons/fi";
 
 export const RecentActivity = () => {
+
   return (
     <div className="bg-white border-2 p-4 rounded-lg border-gray-300 dark:border-gray-600 max-h-96 md:max-h-[18rem] overflow-y-auto">
       <div className="mb-4">

@@ -1,89 +1,222 @@
 import React, { useState } from "react";
+import { db } from "../Config/firebase";
+import { collection, addDoc } from "firebase/firestore";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
+import { Dropdown } from "primereact/dropdown";
+import { Calendar } from "primereact/calendar";
+import { Toast } from "primereact/toast";
 import { FiPlusCircle } from "react-icons/fi";
+import { useRef } from "react";
+
 export const AddTaskForm = () => {
   const [visible, setVisible] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("low");
+  const [status, setStatus] = useState("todo");
+  const [dueDate, setDueDate] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const toast = useRef(null);
 
-  const handleSubmit = (e) => {
+  const priorityOptions = [
+    { label: "🔵 Low", value: "low" },
+    { label: "🟡 Medium", value: "medium" },
+    { label: "🔴 High", value: "high" },
+  ];
+
+  const statusOptions = [
+    { label: "📝 Pending", value: "todo" },
+    { label: "⏳ In Progress", value: "in-progress" },
+    { label: "✅ Completed", value: "done" },
+  ];
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setVisible(false);
+
+    // Validate required fields
+    if (!title.trim()) {
+      toast.current.show({
+        severity: "warn",
+        summary: "Validation Error",
+        detail: "Please enter a task title",
+        life: 3000,
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "tasks"), {
+        title: title.trim(),
+        description: description.trim(),
+        priority: priority,
+        status: status,
+        dueDate: dueDate ? new Date(dueDate) : null,
+        createdAt: new Date(),
+      });
+
+      // Reset form and close dialog
+      setTitle("");
+      setDescription("");
+      setPriority("low");
+      setStatus("todo");
+      setDueDate(null);
+      setVisible(false);
+
+      toast.current.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Task created successfully!",
+        life: 3000,
+      });
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: `Failed to create task: ${error.message}`,
+        life: 3000,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const dialogFooter = (
+    <div className="flex justify-end gap-2">
+      <Button
+        label="Cancel"
+        icon="pi pi-times"
+        onClick={() => setVisible(false)}
+        className="p-button-text"
+        size="small"
+      />
+      <Button
+        label="Create Task"
+        icon="pi pi-check"
+        onClick={handleSubmit}
+        loading={loading}
+        disabled={loading}
+        size="small"
+        severity="success"
+      />
+    </div>
+  );
 
   return (
     <>
-      <Button onClick={() => setVisible(true)} label="Add Task" severity='info' size="small" />
+      <Toast ref={toast} />
+      <Button
+        onClick={() => setVisible(true)}
+        icon={<FiPlusCircle className="mr-2" />}
+        label="Add Task"
+        severity="info"
+        size="small"
+        rounded
+      />
 
       <Dialog
-        className="w-100"
         visible={visible}
         onHide={() => setVisible(false)}
-        header={
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2 ">
-            <FiPlusCircle size={14} />
-            Create New Task
-          </span>
-        }
+        header="Create New Task"
         modal
+        className="w-full md:w-2xl"
+        footer={dialogFooter}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-              Title
+          {/* Title */}
+          <div className="field">
+            <label htmlFor="title" className="block font-semibold mb-2 text-sm">
+              Task Title <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
-              placeholder="Task title"
+            <InputText
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter task title"
+              className="w-full"
             />
           </div>
-          <div className="flex flex-col gap-1">
-            <textarea
-              className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
-              placeholder="Task description"
+
+          {/* Description */}
+          <div className="field">
+            <label
+              htmlFor="description"
+              className="block font-semibold mb-2 text-sm"
+            >
+              Description
+            </label>
+            <InputTextarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter task description (optional)"
               rows={4}
+              className="w-full"
             />
           </div>
-          <div className="flex flex-col gap-4 md:flex-row">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+
+          {/* Priority and Status */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="field">
+              <label
+                htmlFor="priority"
+                className="block font-semibold mb-2 text-sm"
+              >
                 Priority
               </label>
-              <select className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Status
-              </label>
-              <select className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400">
-                <option value="todo">Pending </option>
-                <option value="in-progress">In Progress</option>
-                <option value="done">Completed</option>
-              </select>
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Due Date
-              </label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
+              <Dropdown
+                id="priority"
+                value={priority}
+                onChange={(e) => setPriority(e.value)}
+                options={priorityOptions}
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select priority"
+                className="w-full"
               />
             </div>
-                  </div>
-                  <div className="flex justify-end gap-2 mt-4">
-                      <Button
-                          size="small"
-              label="Cancel"
-              onClick={() => setVisible(false)}
-              className="p-button-text"
+
+            <div className="field">
+              <label
+                htmlFor="status"
+                className="block font-semibold mb-2 text-sm"
+              >
+                Status
+              </label>
+              <Dropdown
+                id="status"
+                value={status}
+                onChange={(e) => setStatus(e.value)}
+                options={statusOptions}
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select status"
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {/* Due Date */}
+          <div className="field">
+            <label
+              htmlFor="dueDate"
+              className="block font-semibold mb-2 text-sm"
+            >
+              Due Date
+            </label>
+            <Calendar
+              id="dueDate"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.value)}
+              placeholder="Pick a date"
+              className="w-full"
+              showIcon
+              dateFormat="dd/mm/yy"
             />
-            <Button size="small" label="Create Task" type="submit" />
           </div>
         </form>
       </Dialog>

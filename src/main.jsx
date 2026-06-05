@@ -9,6 +9,7 @@ import { Totals } from "./component/Totals";
 import { MyTask } from "./pages/Dashboard/MyTask";
 import { Kanban } from "./pages/Dashboard/Kanban";
 import { Calendar } from "./component/Calendar";
+import { Test } from "./pages/test";
 const App = () => (
   <PrimeReactProvider>
     <Router>
@@ -19,7 +20,8 @@ const App = () => (
           <Route path="/mytask" element={<MyTask />} />
           <Route path="/calendar" element={<Calendar/>}/>
         </Route>
-        <Route path='/kanban' element={<Kanban/>} />
+        <Route path='/kanban' element={<Kanban />} />
+        <Route path="/test" element={<Test />} />
         <Route path="*" element={<div className="p-4">Page Not Found</div>} />
       </Routes>
     </Router>
