@@ -12,7 +12,7 @@ export const AddTaskForm = () => {
 
   return (
     <>
-      <Button onClick={() => setVisible(true)} label="Add Task" size="small" />
+      <Button onClick={() => setVisible(true)} label="Add Task" severity='info' size="small" />
 
       <Dialog
         className="w-100"

@@ -8,6 +8,7 @@ import { Dash_Board } from "./dashboard";
 import { Totals } from "./component/Totals";
 import { MyTask } from "./pages/Dashboard/MyTask";
 import { Kanban } from "./pages/Dashboard/Kanban";
+import { Calendar } from "./component/Calendar";
 const App = () => (
   <PrimeReactProvider>
     <Router>
@@ -16,6 +17,7 @@ const App = () => (
         <Route element={<Dash_Board/>}>
           <Route path="/overview" element={<Totals />} />
           <Route path="/mytask" element={<MyTask />} />
+          <Route path="/calendar" element={<Calendar/>}/>
         </Route>
         <Route path='/kanban' element={<Kanban/>} />
         <Route path="*" element={<div className="p-4">Page Not Found</div>} />

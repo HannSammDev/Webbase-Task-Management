@@ -8,7 +8,7 @@ export const Calendar = () => {
   const [date, setDate] = useState(dueDates[0]);
 
   return (
-    <div className="border-2 rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72">
+    <div className="border-2 rounded-lg border-gray-300 dark:border-gray-600 h-full md:h-72">
       <div className="relative flex items-start justify-center h-full">
         <div className="card flex justify-content-center w-full h-full">
           <PrimeCalendar
