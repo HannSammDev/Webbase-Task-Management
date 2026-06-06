@@ -18,6 +18,7 @@ export const AddTaskForm = () => {
   const [priority, setPriority] = useState("low");
   const [status, setStatus] = useState("todo");
   const [dueDate, setDueDate] = useState(null);
+  const [assignedTo, setAssignedTo] = useState("");
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
 
@@ -33,9 +34,14 @@ export const AddTaskForm = () => {
     { label: "✅ Completed", value: "done" },
   ];
 
+  const assigneeOptions = [
+    { label: "Alice", value: "Alice" },
+    { label: "Bob", value: "Bob" },
+    { label: "Charlie", value: "Charlie" },
+  ];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     // Validate required fields
     if (!title.trim()) {
       toast.current.show({
@@ -46,7 +52,6 @@ export const AddTaskForm = () => {
       });
       return;
     }
-
     setLoading(true);
     try {
       await addDoc(collection(db, "tasks"), {
@@ -56,14 +61,15 @@ export const AddTaskForm = () => {
         status: status,
         dueDate: dueDate ? new Date(dueDate) : null,
         createdAt: new Date(),
+        assignedTo: assignedTo.trim(),
       });
-
       // Reset form and close dialog
       setTitle("");
       setDescription("");
       setPriority("low");
       setStatus("todo");
       setDueDate(null);
+      setAssignedTo("");
       setVisible(false);
 
       toast.current.show({
@@ -154,7 +160,7 @@ export const AddTaskForm = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter task description (optional)"
-              rows={4}
+              rows={1}
               className="w-full"
             />
           </div>
@@ -200,23 +206,44 @@ export const AddTaskForm = () => {
             </div>
           </div>
 
-          {/* Due Date */}
-          <div className="field">
-            <label
-              htmlFor="dueDate"
-              className="block font-semibold mb-2 text-sm"
-            >
-              Due Date
-            </label>
-            <Calendar
-              id="dueDate"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.value)}
-              placeholder="Pick a date"
-              className="w-full"
-              showIcon
-              dateFormat="dd/mm/yy"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Due Date */}
+
+            <div className="field">
+              <label
+                htmlFor="dueDate"
+                className="block font-semibold mb-2 text-sm"
+              >
+                Due Date
+              </label>
+              <Calendar
+                id="dueDate"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.value)}
+                placeholder="Pick a date"
+                className="w-full"
+                showIcon
+                dateFormat="dd/mm/yy"
+              />
+            </div>
+            <div className="field">
+              <label
+                htmlFor="assignedTo"
+                className="block font-semibold mb-2 text-sm"
+              >
+                Assigned To
+              </label>
+              <Dropdown
+                id="assignedTo"
+                value={assignedTo} // ← Just use the value directly, not the object
+                onChange={(e) => setAssignedTo(e.value)} // ← Use e.value, not e.target.value
+                options={assigneeOptions}
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select assignee"
+                className="w-full"
+              />
+            </div>
           </div>
         </form>
       </Dialog>
