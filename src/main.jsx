@@ -15,12 +15,13 @@ const App = () => (
     <Router>
       <Routes>
         <Route path="/" element={<Layout />} />
-        <Route element={<Dash_Board/>}>
+        <Route element={<Dash_Board />}>
           <Route path="/overview" element={<Totals />} />
           <Route path="/mytask" element={<MyTask />} />
-          <Route path="/calendar" element={<Calendar/>}/>
+          <Route path="/kanban" element={<Kanban />} />
+          <Route path="/calendar" element={<Calendar />} />
         </Route>
-        <Route path='/kanban' element={<Kanban />} />
+
         <Route path="/test" element={<Test />} />
         <Route path="*" element={<div className="p-4">Page Not Found</div>} />
       </Routes>

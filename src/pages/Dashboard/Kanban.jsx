@@ -1,104 +1,36 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { db } from "../../Config/firebase";
+import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
+
 import { TabView, TabPanel } from "primereact/tabview";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { AddTaskForm } from "../../component/AddTaskForm";
 
-const INITIAL_COLUMNS = [
-  {
-    id: "pending",
-    label: "Pending",
-    dotColor: "bg-yellow-400",
-    cards: [
-      {
-        id: 1,
-        title: "Design new landing page",
-        tag: "Design",
-        tagClass: "bg-blue-100 text-blue-800",
-        assignee: "AJ",
-      },
-      {
-        id: 2,
-        title: "Set up CI/CD pipeline",
-        tag: "DevOps",
-        tagClass: "bg-amber-100 text-amber-800",
-        assignee: "KL",
-      },
-      {
-        id: 3,
-        title: "Write API documentation",
-        tag: "Docs",
-        tagClass: "bg-green-100 text-green-800",
-        assignee: null,
-      },
-    ],
-  },
-  {
-    id: "inprogress",
-    label: "In Progress",
-    dotColor: "bg-blue-400",
-    cards: [
-      {
-        id: 4,
-        title: "Build user auth module",
-        tag: "Dev",
-        tagClass: "bg-blue-100 text-blue-800",
-        assignee: "MR",
-      },
-      {
-        id: 5,
-        title: "User research interviews",
-        tag: "Research",
-        tagClass: "bg-pink-100 text-pink-800",
-        assignee: "SP",
-      },
-    ],
-  },
-  {
-    id: "review",
-    label: "Review",
-    dotColor: "bg-purple-400",
-    cards: [
-      {
-        id: 6,
-        title: "Accessibility audit",
-        tag: "QA",
-        tagClass: "bg-amber-100 text-amber-800",
-        assignee: "TW",
-      },
-      {
-        id: 7,
-        title: "Update privacy policy",
-        tag: "Legal",
-        tagClass: "bg-green-100 text-green-800",
-        assignee: null,
-      },
-    ],
-  },
-  {
-    id: "completed",
-    label: "Completed",
-    dotColor: "bg-green-400",
-    cards: [
-      {
-        id: 8,
-        title: "Migrate database schema",
-        tag: "Dev",
-        tagClass: "bg-blue-100 text-blue-800",
-        assignee: "KL",
-      },
-      {
-        id: 9,
-        title: "Create onboarding flow",
-        tag: "Design",
-        tagClass: "bg-blue-100 text-blue-800",
-        assignee: "AJ",
-      },
-    ],
-  },
+// ─── Firestore status values → internal column ids ────────────────────────────
+// These strings must exactly match what you store in Firestore's "status" field
+const STATUS_TO_COLUMN = {
+  "To do": "todo",
+  "In Progress": "inprogress",
+  Review: "review",
+  Completed: "completed",
+};
+
+const COLUMN_TO_STATUS = {
+  todo: "To do",
+  inprogress: "In Progress",
+  review: "Review",
+  completed: "Completed",
+};
+
+// ─── Column definitions ───────────────────────────────────────────────────────
+const COLUMNS = [
+  { id: "todo", label: "To Do", dotColor: "bg-yellow-400" },
+  { id: "inprogress", label: "In Progress", dotColor: "bg-blue-400" },
+  { id: "review", label: "Review", dotColor: "bg-purple-400" },
+  { id: "completed", label: "Completed", dotColor: "bg-green-400" },
 ];
 
-const STATUS_MAP = {
-  pending: { label: "Pending", statusClass: "bg-amber-100 text-amber-800" },
+const STATUS_META = {
+  todo: { label: "To Do", statusClass: "bg-yellow-100 text-yellow-800" },
   inprogress: {
     label: "In Progress",
     statusClass: "bg-blue-100 text-blue-800",
@@ -107,29 +39,54 @@ const STATUS_MAP = {
   completed: { label: "Completed", statusClass: "bg-green-100 text-green-800" },
 };
 
-const TIMELINE_DATE_MAP = {
-  8: "May 20",
-  9: "May 24",
-  4: "Jun 5",
-  5: "Jun 7",
-  6: "Jun 10",
-  1: "Jun 15",
+const PRIORITY_META = {
+  high: { label: "High", className: "bg-red-100 text-red-700" },
+  medium: { label: "Medium", className: "bg-amber-100 text-amber-700" },
+  low: { label: "Low", className: "bg-gray-100 text-gray-600" },
 };
 
 const TIMELINE_STATE_MAP = {
   completed: "done",
   inprogress: "active",
   review: "pending",
-  pending: "pending",
+  todo: "pending",
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const toColumnId = (status) => STATUS_TO_COLUMN[status] ?? "todo";
+
+const formatDate = (val) => {
+  if (!val) return null;
+  const d = val?.toDate ? val.toDate() : new Date(val);
+  if (isNaN(d)) return null;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+const toInitials = (name) => {
+  if (!name) return null;
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 };
 
 // ─── Shared primitives ────────────────────────────────────────────────────────
 
-const Avatar = ({ initials }) => (
-  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold flex items-center justify-center shrink-0">
-    {initials}
-  </div>
-);
+const Avatar = ({ name }) => {
+  const initials = toInitials(name);
+  if (!initials) return null;
+  return (
+    <div
+      title={name}
+      className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold flex items-center justify-center shrink-0"
+    >
+      {initials}
+    </div>
+  );
+};
 
 const Tag = ({ label, className }) => (
   <span
@@ -139,167 +96,208 @@ const Tag = ({ label, className }) => (
   </span>
 );
 
-// ─── Kanban card (draggable-aware) ────────────────────────────────────────────
+// ─── Kanban card ──────────────────────────────────────────────────────────────
 
-const KanbanCard = ({ card, index }) => (
-  <Draggable draggableId={String(card.id)} index={index}>
-    {(provided, snapshot) => (
-      <div
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
-        className={`
-          bg-white border rounded-lg p-3 mb-2 select-none
-          transition-shadow duration-150
-          ${
-            snapshot.isDragging
-              ? "border-blue-400 shadow-lg rotate-1 cursor-grabbing"
-              : "border-gray-200 hover:border-gray-400 hover:shadow-sm cursor-grab"
-          }
-        `}
-      >
-        <p className="text-[13px] text-gray-900 leading-snug mb-2">
-          {card.title}
-        </p>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <Tag label={card.tag} className={card.tagClass} />
-          {card.assignee && <Avatar initials={card.assignee} />}
+const KanbanCard = ({ task, index }) => {
+  const priority =
+    PRIORITY_META[task.priority?.toLowerCase()] ?? PRIORITY_META.low;
+  const due = formatDate(task.dueDate);
+
+  return (
+    <Draggable draggableId={task.id} index={index}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className={`
+            bg-white border rounded-lg p-3 mb-2 select-none
+            transition-shadow duration-150
+            ${
+              snapshot.isDragging
+                ? "border-blue-400 shadow-lg rotate-1 cursor-grabbing"
+                : "border-gray-200 hover:border-gray-400 hover:shadow-sm cursor-grab"
+            }
+          `}
+        >
+          <p className="text-[13px] text-gray-900 leading-snug mb-2 font-medium">
+            {task.title}
+          </p>
+
+          {task.description && (
+            <p className="text-[11px] text-gray-400 leading-snug mb-2 line-clamp-2">
+              {task.description}
+            </p>
+          )}
+
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Tag label={priority.label} className={priority.className} />
+            {due && (
+              <span className="text-[11px] text-gray-400 flex items-center gap-0.5">
+                <i className="pi pi-calendar text-[10px]" />
+                {due}
+              </span>
+            )}
+            <div className="ml-auto">
+              <Avatar name={task.assignedTo} />
+            </div>
+          </div>
         </div>
-      </div>
-    )}
-  </Draggable>
-);
+      )}
+    </Draggable>
+  );
+};
 
 // ─── Board views ──────────────────────────────────────────────────────────────
 
-const DesktopBoardView = ({ columns }) => (
+const DesktopBoardView = ({ columnMap }) => (
   <div className="grid grid-cols-4 gap-3">
-    {columns.map((col) => (
-      <Droppable droppableId={col.id} key={col.id}>
-        {(provided, snapshot) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            className={`
-              rounded-lg p-2.5 min-h-[80px] transition-colors duration-150
-              ${snapshot.isDraggingOver ? "bg-blue-50 border border-blue-200" : "bg-gray-50"}
-            `}
-          >
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${col.dotColor}`} />
-                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-                  {col.label}
+    {COLUMNS.map((col) => {
+      const tasks = columnMap[col.id] ?? [];
+      return (
+        <Droppable droppableId={col.id} key={col.id}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`
+                rounded-lg p-2.5 min-h-[80px] transition-colors duration-150
+                ${
+                  snapshot.isDraggingOver
+                    ? "bg-blue-50 border border-blue-200"
+                    : "bg-gray-50"
+                }
+              `}
+            >
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${col.dotColor}`} />
+                  <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                    {col.label}
+                  </span>
+                </div>
+                <span className="text-[11px] bg-white border border-gray-200 rounded-full px-1.5 py-px text-gray-500">
+                  {tasks.length}
                 </span>
               </div>
-              <span className="text-[11px] bg-white border border-gray-200 rounded-full px-1.5 py-px text-gray-500">
-                {col.cards.length}
-              </span>
+
+              {tasks.map((task, index) => (
+                <KanbanCard key={task.id} task={task} index={index} />
+              ))}
+              {provided.placeholder}
             </div>
-            {col.cards.map((card, index) => (
-              <KanbanCard key={card.id} card={card} index={index} />
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    ))}
+          )}
+        </Droppable>
+      );
+    })}
   </div>
 );
 
-const MobileBoardView = ({ columns }) => {
-  const [open, setOpen] = useState("pending");
+const MobileBoardView = ({ columnMap }) => {
+  const [open, setOpen] = useState("todo");
   return (
     <div className="flex flex-col gap-2">
-      {columns.map((col) => (
-        <div
-          key={col.id}
-          className="border border-gray-200 rounded-lg overflow-hidden"
-        >
-          <button
-            className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-50 text-left"
-            onClick={() => setOpen(open === col.id ? null : col.id)}
+      {COLUMNS.map((col) => {
+        const tasks = columnMap[col.id] ?? [];
+        return (
+          <div
+            key={col.id}
+            className="border border-gray-200 rounded-lg overflow-hidden"
           >
-            <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${col.dotColor}`} />
-              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                {col.label}
-              </span>
-              <span className="text-xs bg-white border border-gray-200 rounded-full px-2 text-gray-500">
-                {col.cards.length}
-              </span>
-            </div>
-            <i
-              className={`pi ${open === col.id ? "pi-chevron-up" : "pi-chevron-down"} text-gray-400 text-xs`}
-            />
-          </button>
-          {open === col.id && (
-            <Droppable droppableId={col.id}>
-              {(provided, snapshot) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={`p-2 min-h-[40px] transition-colors ${snapshot.isDraggingOver ? "bg-blue-50" : "bg-gray-50"}`}
-                >
-                  {col.cards.map((card, index) => (
-                    <KanbanCard key={card.id} card={card} index={index} />
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          )}
-        </div>
-      ))}
+            <button
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-50 text-left"
+              onClick={() => setOpen(open === col.id ? null : col.id)}
+            >
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${col.dotColor}`} />
+                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  {col.label}
+                </span>
+                <span className="text-xs bg-white border border-gray-200 rounded-full px-2 text-gray-500">
+                  {tasks.length}
+                </span>
+              </div>
+              <i
+                className={`pi ${open === col.id ? "pi-chevron-up" : "pi-chevron-down"} text-gray-400 text-xs`}
+              />
+            </button>
+
+            {open === col.id && (
+              <Droppable droppableId={col.id}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`p-2 min-h-[40px] transition-colors ${
+                      snapshot.isDraggingOver ? "bg-blue-50" : "bg-gray-50"
+                    }`}
+                  >
+                    {tasks.map((task, index) => (
+                      <KanbanCard key={task.id} task={task} index={index} />
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };
 
-const BoardView = ({ columns }) => (
+const BoardView = ({ columnMap }) => (
   <>
     <div className="block sm:hidden">
-      <MobileBoardView columns={columns} />
+      <MobileBoardView columnMap={columnMap} />
     </div>
     <div className="hidden sm:block">
-      <DesktopBoardView columns={columns} />
+      <DesktopBoardView columnMap={columnMap} />
     </div>
   </>
 );
 
-// ─── List view (derived from columns state) ───────────────────────────────────
+// ─── List view ────────────────────────────────────────────────────────────────
 
-const ListView = ({ columns }) => {
+const ListView = ({ tasks }) => {
+  const SORT_ORDER = { todo: 0, inprogress: 1, review: 2, completed: 3 };
   const rows = useMemo(
     () =>
-      columns.flatMap((col) =>
-        col.cards.map((card) => ({
-          title: card.title,
-          tag: card.tag,
-          assignee: card.assignee || "—",
-          ...STATUS_MAP[col.id],
-        })),
+      [...tasks].sort(
+        (a, b) => (SORT_ORDER[a.columnId] ?? 9) - (SORT_ORDER[b.columnId] ?? 9),
       ),
-    [columns],
+    [tasks],
   );
 
   return (
     <>
       {/* Mobile: stacked cards */}
       <div className="flex flex-col gap-2 sm:hidden">
-        {rows.map((row, i) => (
-          <div key={i} className="border border-gray-200 rounded-lg p-3">
-            <p className="text-[13px] font-medium text-gray-900 mb-2">
-              {row.title}
-            </p>
-            <div className="flex flex-wrap gap-1.5 items-center">
-              <Tag label={row.label} className={row.statusClass} />
-              <Tag label={row.tag} className="bg-gray-100 text-gray-700" />
-              <span className="text-[11px] text-gray-400 ml-auto">
-                {row.assignee}
-              </span>
+        {rows.map((task) => {
+          const meta = STATUS_META[task.columnId] ?? STATUS_META.todo;
+          const priority =
+            PRIORITY_META[task.priority?.toLowerCase()] ?? PRIORITY_META.low;
+          return (
+            <div
+              key={task.id}
+              className="border border-gray-200 rounded-lg p-3"
+            >
+              <p className="text-[13px] font-medium text-gray-900 mb-2">
+                {task.title}
+              </p>
+              <div className="flex flex-wrap gap-1.5 items-center">
+                <Tag label={meta.label} className={meta.statusClass} />
+                <Tag label={priority.label} className={priority.className} />
+                {task.assignedTo && (
+                  <span className="text-[11px] text-gray-400 ml-auto">
+                    {task.assignedTo}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Desktop: table */}
@@ -307,33 +305,56 @@ const ListView = ({ columns }) => {
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr>
-              {["Task", "Status", "Tag", "Assignee"].map((h) => (
-                <th
-                  key={h}
-                  className="text-left text-[12px] font-medium text-gray-500 px-3 py-2 border-b border-gray-100"
-                >
-                  {h}
-                </th>
-              ))}
+              {["Task", "Status", "Priority", "Assignee", "Due Date"].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="text-left text-[12px] font-medium text-gray-500 px-3 py-2 border-b border-gray-100"
+                  >
+                    {h}
+                  </th>
+                ),
+              )}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={i} className="hover:bg-gray-50 transition-colors">
-                <td className="px-3 py-2.5 border-b border-gray-100 text-gray-900">
-                  {row.title}
-                </td>
-                <td className="px-3 py-2.5 border-b border-gray-100">
-                  <Tag label={row.label} className={row.statusClass} />
-                </td>
-                <td className="px-3 py-2.5 border-b border-gray-100">
-                  <Tag label={row.tag} className="bg-gray-100 text-gray-700" />
-                </td>
-                <td className="px-3 py-2.5 border-b border-gray-100 text-gray-500">
-                  {row.assignee}
-                </td>
-              </tr>
-            ))}
+            {rows.map((task) => {
+              const meta = STATUS_META[task.columnId] ?? STATUS_META.todo;
+              const priority =
+                PRIORITY_META[task.priority?.toLowerCase()] ??
+                PRIORITY_META.low;
+              const due = formatDate(task.dueDate);
+              return (
+                <tr
+                  key={task.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-3 py-2.5 border-b border-gray-100 text-gray-900">
+                    <p className="font-medium">{task.title}</p>
+                    {task.description && (
+                      <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">
+                        {task.description}
+                      </p>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5 border-b border-gray-100">
+                    <Tag label={meta.label} className={meta.statusClass} />
+                  </td>
+                  <td className="px-3 py-2.5 border-b border-gray-100">
+                    <Tag
+                      label={priority.label}
+                      className={priority.className}
+                    />
+                  </td>
+                  <td className="px-3 py-2.5 border-b border-gray-100 text-gray-500">
+                    {task.assignedTo || "—"}
+                  </td>
+                  <td className="px-3 py-2.5 border-b border-gray-100 text-gray-500">
+                    {due || "—"}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -341,34 +362,28 @@ const ListView = ({ columns }) => {
   );
 };
 
-// ─── Timeline view (derived from columns state) ───────────────────────────────
+// ─── Timeline view ────────────────────────────────────────────────────────────
 
-const TimelineView = ({ columns }) => {
+const TimelineView = ({ tasks }) => {
   const items = useMemo(() => {
-    const allCards = columns.flatMap((col) =>
-      col.cards.map((card) => ({
-        title: card.title,
-        state: TIMELINE_STATE_MAP[col.id] ?? "pending",
-        label: STATUS_MAP[col.id]?.label ?? col.label,
-        date: TIMELINE_DATE_MAP[card.id] ?? "TBD",
-        _sortOrder:
-          col.id === "completed"
-            ? 0
-            : col.id === "inprogress"
-              ? 1
-              : col.id === "review"
-                ? 2
-                : 3,
-      })),
-    );
-    return allCards.sort((a, b) => a._sortOrder - b._sortOrder);
-  }, [columns]);
+    const ORDER = { completed: 0, inprogress: 1, review: 2, todo: 3 };
+    return [...tasks]
+      .sort((a, b) => (ORDER[a.columnId] ?? 9) - (ORDER[b.columnId] ?? 9))
+      .map((task) => ({
+        id: task.id,
+        title: task.title,
+        state: TIMELINE_STATE_MAP[task.columnId] ?? "pending",
+        label: STATUS_META[task.columnId]?.label ?? task.columnId,
+        date: formatDate(task.dueDate) ?? "No due date",
+        assignedTo: task.assignedTo,
+      }));
+  }, [tasks]);
 
   return (
     <div className="py-2">
       {items.map((item, i) => (
         <div
-          key={i}
+          key={item.id}
           className="flex gap-3"
           style={{ marginBottom: i < items.length - 1 ? 20 : 0 }}
         >
@@ -392,6 +407,7 @@ const TimelineView = ({ columns }) => {
             </p>
             <p className="text-[12px] text-gray-500 mt-0.5">
               {item.label} · {item.date}
+              {item.assignedTo && ` · ${item.assignedTo}`}
             </p>
           </div>
         </div>
@@ -403,12 +419,44 @@ const TimelineView = ({ columns }) => {
 // ─── Root component ───────────────────────────────────────────────────────────
 
 export const Kanban = () => {
-  const [columns, setColumns] = useState(INITIAL_COLUMNS);
+  // null = loading, array = loaded
+  const [tasks, setTasks] = useState(null);
 
-  const onDragEnd = (result) => {
-    const { source, destination } = result;
+  // ── Fetch flat "tasks" collection from Firestore ──────────────────────────
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "tasks"),
+      (snapshot) => {
+        const data = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          // Derive internal columnId from Firestore's "status" string
+          columnId: toColumnId(d.data().status),
+        }));
+        setTasks(data);
+      },
+      (error) => {
+        console.error("Firestore error:", error);
+      },
+    );
+    return () => unsubscribe();
+  }, []);
 
-    // Dropped outside any droppable or in the same spot
+  // ── Build columnMap { todo: [tasks], inprogress: [tasks], ... } ───────────
+  const columnMap = useMemo(() => {
+    if (!tasks) return {};
+    return tasks.reduce((acc, task) => {
+      const col = task.columnId;
+      if (!acc[col]) acc[col] = [];
+      acc[col].push(task);
+      return acc;
+    }, {});
+  }, [tasks]);
+
+  // ── Drag and drop ─────────────────────────────────────────────────────────
+  const onDragEnd = async (result) => {
+    const { source, destination, draggableId } = result;
+
     if (!destination) return;
     if (
       destination.droppableId === source.droppableId &&
@@ -416,22 +464,46 @@ export const Kanban = () => {
     )
       return;
 
-    const newColumns = columns.map((col) => ({
-      ...col,
-      cards: [...col.cards],
-    }));
+    const newColumnId = destination.droppableId;
+    const newStatus = COLUMN_TO_STATUS[newColumnId];
 
-    const srcColIdx = newColumns.findIndex((c) => c.id === source.droppableId);
-    const dstColIdx = newColumns.findIndex(
-      (c) => c.id === destination.droppableId,
+    // 1. Optimistic update — instant UI feedback
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === draggableId
+          ? { ...t, columnId: newColumnId, status: newStatus }
+          : t,
+      ),
     );
 
-    const [movedCard] = newColumns[srcColIdx].cards.splice(source.index, 1);
-    newColumns[dstColIdx].cards.splice(destination.index, 0, movedCard);
-
-    setColumns(newColumns);
+    // 2. Persist to Firestore — only the "status" field changes
+    try {
+      await updateDoc(doc(db, "tasks", draggableId), { status: newStatus });
+    } catch (error) {
+      console.error("Failed to update task status:", error);
+      // onSnapshot will auto-revert if write fails
+    }
   };
 
+  // ── Loading state ─────────────────────────────────────────────────────────
+  if (tasks === null) {
+    return (
+      <div className="border border-gray-200 rounded-xl bg-white mb-4 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+          <i className="pi pi-th-large text-gray-400 text-sm" />
+          <span className="text-xl font-semibold text-gray-900">
+            Kanban board
+          </span>
+        </div>
+        <div className="flex items-center justify-center py-16 text-gray-400 text-sm gap-2">
+          <i className="pi pi-spin pi-spinner" />
+          Loading…
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main render ───────────────────────────────────────────────────────────
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="border border-gray-200 rounded-xl bg-white mb-4 overflow-hidden">
@@ -443,10 +515,9 @@ export const Kanban = () => {
               Kanban board
             </span>
           </div>
-          <AddTaskForm />
         </div>
 
-        {/* TabView */}
+        {/* Tabs */}
         <TabView
           pt={{
             root: { className: "w-full" },
@@ -467,7 +538,7 @@ export const Kanban = () => {
             }}
           >
             <div className="p-3 sm:p-4">
-              <BoardView columns={columns} />
+              <BoardView columnMap={columnMap} />
             </div>
           </TabPanel>
 
@@ -481,7 +552,7 @@ export const Kanban = () => {
             }}
           >
             <div className="p-3 sm:p-4">
-              <ListView columns={columns} />
+              <ListView tasks={tasks} />
             </div>
           </TabPanel>
 
@@ -495,7 +566,7 @@ export const Kanban = () => {
             }}
           >
             <div className="p-3 sm:p-4">
-              <TimelineView columns={columns} />
+              <TimelineView tasks={tasks} />
             </div>
           </TabPanel>
         </TabView>

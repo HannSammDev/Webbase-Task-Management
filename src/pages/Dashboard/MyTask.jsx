@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../../Config/firebase";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 
 const getPriorityBadge = (priority) => {
   switch (priority?.toLowerCase()) {
@@ -96,13 +96,11 @@ const getStatusDotColor = (status) => {
 const formatDate = (date) => {
   if (!date) return "";
   if (date.toDate)
-    return date
-      .toDate()
-      .toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
+    return date.toDate().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   if (typeof date === "string")
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -183,25 +181,32 @@ export const MyTask = () => {
   const tabs = ["All", "To do", "Doing", "Done"];
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        setLoading(true);
-        const querySnapshot = await getDocs(collection(db, "tasks"));
-        const tasksData = querySnapshot.docs.map((doc) => ({
+    setLoading(true);
+
+    const unsubscribe = onSnapshot(
+      collection(db, "tasks"),
+      (snapshot) => {
+        const tasksData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
+        tasksData.sort(
+          (a, b) =>
+            b.createdAt?.toDate()?.getTime() - a.createdAt?.toDate()?.getTime(),
+        );
         setTasks(tasksData);
         setError(null);
-      } catch (err) {
-        console.error("Error fetching tasks: ", err);
-        setError(err.message);
-      } finally {
         setLoading(false);
-      }
-    };
+      },
+      (err) => {
+        console.error("Error fetching tasks:", err);
+        setError(err.message);
+        setLoading(false);
+      },
+    );
 
-    fetchTasks();
+    return () => unsubscribe();
   }, []);
 
   if (loading) {
