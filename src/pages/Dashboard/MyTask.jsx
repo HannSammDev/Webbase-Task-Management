@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../../Config/firebase";
-import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  doc,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
+import { useAuth } from "../../Auth/AuthContex";
 
 const getPriorityBadge = (priority) => {
   switch (priority?.toLowerCase()) {
@@ -180,32 +188,37 @@ export const MyTask = () => {
 
   const tabs = ["All", "To do", "Doing", "Done"];
 
+  const { user } = useAuth();
   useEffect(() => {
     setLoading(true);
 
-    const unsubscribe = onSnapshot(
-      collection(db, "tasks"),
-      (snapshot) => {
-        const tasksData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+   const q = query(
+     collection(db, "tasks"),
+     where("assignedTo", "==", user.uid),
+   );
 
-        tasksData.sort(
-          (a, b) =>
-            b.createdAt?.toDate()?.getTime() - a.createdAt?.toDate()?.getTime(),
-        );
-        setTasks(tasksData);
-        setError(null);
-        setLoading(false);
-      },
-      (err) => {
-        console.error("Error fetching tasks:", err);
-        setError(err.message);
-        setLoading(false);
-      },
-    );
+   const unsubscribe = onSnapshot(
+     q, // 👈 just replace the first two args with just q
+     (snapshot) => {
+       const tasksData = snapshot.docs.map((doc) => ({
+         id: doc.id,
+         ...doc.data(),
+       }));
 
+       tasksData.sort(
+         (a, b) =>
+           b.createdAt?.toDate()?.getTime() - a.createdAt?.toDate()?.getTime(),
+       );
+       setTasks(tasksData);
+       setError(null);
+       setLoading(false);
+     },
+     (err) => {
+       console.error("Error fetching tasks:", err);
+       setError(err.message);
+       setLoading(false);
+     },
+   );
     return () => unsubscribe();
   }, []);
 

@@ -10,23 +10,34 @@ import { MyTask } from "./pages/Dashboard/MyTask";
 import { Kanban } from "./pages/Dashboard/Kanban";
 import { Calendar } from "./component/Calendar";
 import { Test } from "./pages/test";
+import { RegisterForm } from "./component/RegisterForm";
+import { AuthProvider } from "./Auth/AuthContex";
+import { ProtectedRoute } from "./Auth/ProtectedRoute";
 const App = () => (
-  <PrimeReactProvider>
-    <Router>
-      <Routes>
-        <Route path="/" element={<Layout />} />
-        <Route element={<Dash_Board />}>
-          <Route path="/overview" element={<Totals />} />
-          <Route path="/mytask" element={<MyTask />} />
-          <Route path="/kanban" element={<Kanban />} />
-          <Route path="/calendar" element={<Calendar />} />
-        </Route>
+  <AuthProvider>
+    <PrimeReactProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Layout />} />
+          <Route path="/register" element={<RegisterForm />} />
 
-        <Route path="/test" element={<Test />} />
-        <Route path="*" element={<div className="p-4">Page Not Found</div>} />
-      </Routes>
-    </Router>
-  </PrimeReactProvider>
+          {/* 👇 Protect the whole dashboard once here */}
+
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Dash_Board />}>
+              <Route path="/overview" element={<Totals />} />
+              <Route path="/mytask" element={<MyTask />} />
+              <Route path="/kanban" element={<Kanban />} />
+              <Route path="/calendar" element={<Calendar />} />
+            </Route>
+          </Route>
+
+          <Route path="/test" element={<Test />} />
+          <Route path="*" element={<div className="p-4">Page Not Found</div>} />
+        </Routes>
+      </Router>
+    </PrimeReactProvider>
+  </AuthProvider>
 );
 
 createRoot(document.getElementById("root")).render(

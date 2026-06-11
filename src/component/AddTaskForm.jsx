@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { db } from "../Config/firebase";
 import { collection, addDoc } from "firebase/firestore";
+import { useAuth } from "../Auth/AuthContex";
+
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
@@ -39,6 +41,8 @@ export const AddTaskForm = () => {
     { label: "Bob", value: "Bob" },
     { label: "Charlie", value: "Charlie" },
   ];
+const {user} = useAuth()
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,7 +65,7 @@ export const AddTaskForm = () => {
         status: status,
         dueDate: dueDate ? new Date(dueDate) : null,
         createdAt: new Date(),
-        assignedTo: assignedTo.trim(),
+        assignedTo: assignedTo.trim() || user.uid,
       });
       // Reset form and close dialog
       setTitle("");

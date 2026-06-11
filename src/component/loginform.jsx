@@ -1,17 +1,37 @@
 import React from "react";
+import { auth } from "../Config/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+
 import { Button } from "primereact/button";
 import "primereact/resources/themes/lara-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { FiMail, FiLock } from "react-icons/fi";
 
 export const LoginForm = () => {
+  const [value, setValue] = React.useState({ email: "", password: "" });
+  const [error, setError] = React.useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
+
     event.preventDefault();
-    navigate("/dashboard");
+    // navigate("/overview");
+    try {
+      await signInWithEmailAndPassword(auth, value.email, value.password);
+      navigate("/overview");
+      console.log("User signed in successfully");
+    } catch (error) {
+      console.error("Error signing in:", error);
+      // Optionally, set an error state to display a message to the user
+      // setError(error.message); 
+      setError("Failed to sign in. Please check your credentials and try again.");
+    }
   };
+  
+  const handleClick = () => {
+    navigate('/register')
+  }
 
   return (
     <div className="mx-auto max-w-md w-full px-4 py-8">
@@ -43,6 +63,8 @@ export const LoginForm = () => {
                   id="email"
                   name="email"
                   type="email"
+                  value={value.email}
+                  onChange={(e) => setValue({ ...value, email: e.target.value })}
                   placeholder="example@gmail.com"
                   className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none dark:text-white"
                   required
@@ -66,6 +88,8 @@ export const LoginForm = () => {
                   id="password"
                   name="password"
                   type="password"
+                  value={value.password}
+                  onChange={(e) => setValue({ ...value, password: e.target.value })}
                   placeholder="Enter your password"
                   className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none dark:text-white"
                   required
@@ -85,7 +109,7 @@ export const LoginForm = () => {
             </div>
 
             <Button
-              onClick={() => navigate("/overview")}
+              onClick={handleSubmit}
               type="submit"
               label="Sign In"
               severity="info"
@@ -96,6 +120,7 @@ export const LoginForm = () => {
             <div className="text-center text-sm text-gray-600 dark:text-gray-400">
               Don&apos;t have an account?{" "}
               <button
+                onClick={handleClick}
                 type="button"
                 className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
               >
