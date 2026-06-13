@@ -5,16 +5,16 @@ import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
 import "./index.css";
 import Layout from "./Layout";
 import { Dash_Board } from "./dashboard";
-import { Totals } from "./component/Totals";
+import { Totals } from "./components/Totals";
 import { MyTask } from "./pages/Dashboard/MyTask";
 import { Kanban } from "./pages/Dashboard/Kanban";
-import { Calendar } from "./component/Calendar";
+import { Calendar } from "./components/Calendar";
 import { Test } from "./pages/test";
-import { RegisterForm } from "./component/RegisterForm";
+import { RegisterForm } from "./components/RegisterForm";
 import { AuthProvider } from "./Auth/AuthContex";
 import { ProtectedRoute } from "./Auth/ProtectedRoute";
 const App = () => (
-  <AuthProvider>
+  // <AuthProvider>
     <PrimeReactProvider>
       <Router>
         <Routes>
@@ -23,21 +23,21 @@ const App = () => (
 
           {/* 👇 Protect the whole dashboard once here */}
 
-          <Route element={<ProtectedRoute />}>
+          {/* <Route element={<ProtectedRoute />}> */}
             <Route element={<Dash_Board />}>
               <Route path="/overview" element={<Totals />} />
               <Route path="/mytask" element={<MyTask />} />
               <Route path="/kanban" element={<Kanban />} />
               <Route path="/calendar" element={<Calendar />} />
             </Route>
-          </Route>
+          {/* </Route> */}
 
           <Route path="/test" element={<Test />} />
           <Route path="*" element={<div className="p-4">Page Not Found</div>} />
         </Routes>
       </Router>
     </PrimeReactProvider>
-  </AuthProvider>
+  // </AuthProvider>
 );
 
 createRoot(document.getElementById("root")).render(

@@ -1,9 +1,8 @@
 import React from "react";
 
-import { LoginForm } from "../../component/loginform";
+import { LoginForm } from "../../components/loginform";
 // import Image from "react";
 export const LandingPage = () => {
- 
   return (
     <div className="min-h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row">

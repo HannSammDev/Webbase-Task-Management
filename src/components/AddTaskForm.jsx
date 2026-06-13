@@ -118,7 +118,7 @@ const {user} = useAuth()
 
   return (
     <>
-      <Toast ref={toast} />
+      <Toast ref={toast}  />
       <Button
         onClick={() => setVisible(true)}
         icon={<FiPlusCircle className="mr-2" />}

@@ -14,7 +14,7 @@ import {
   FiUsers,
   FiBell,
 } from "react-icons/fi";
-import { AddTaskForm } from "./component/AddTaskForm";
+import { AddTaskForm } from "./components/AddTaskForm";
 import { NavLink, Outlet, useNavigate } from "react-router-dom"; // ✅ NavLink imported
 
 export const Dash_Board = () => {

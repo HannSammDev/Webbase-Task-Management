@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { auth } from "../Config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
@@ -7,12 +7,13 @@ import "primereact/resources/themes/lara-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import { Navigate, useNavigate } from "react-router-dom";
 import { FiMail, FiLock } from "react-icons/fi";
+// import { Toast } from "primereact/toast";
 
 export const LoginForm = () => {
   const [value, setValue] = React.useState({ email: "", password: "" });
   const [error, setError] = React.useState("");
   const navigate = useNavigate();
-
+// const toast = useRef(null)
   const handleSubmit = async (event) => {
 
     event.preventDefault();
@@ -23,6 +24,7 @@ export const LoginForm = () => {
       console.log("User signed in successfully");
     } catch (error) {
       console.error("Error signing in:", error);
+      // return <Toast ref={toast}/>
       // Optionally, set an error state to display a message to the user
       // setError(error.message); 
       setError("Failed to sign in. Please check your credentials and try again.");
@@ -122,7 +124,7 @@ export const LoginForm = () => {
               <button
                 onClick={handleClick}
                 type="button"
-                className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+                className="font-medium text-blue-600 hover:text-blue-700 hover:underline mt-2 dark:text-blue-400"
               >
                 Create an account
               </button>
