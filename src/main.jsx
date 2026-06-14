@@ -14,7 +14,7 @@ import { RegisterForm } from "./components/RegisterForm";
 import { AuthProvider } from "./Auth/AuthContex";
 import { ProtectedRoute } from "./Auth/ProtectedRoute";
 const App = () => (
-  // <AuthProvider>
+  <AuthProvider>
     <PrimeReactProvider>
       <Router>
         <Routes>
@@ -23,21 +23,21 @@ const App = () => (
 
           {/* 👇 Protect the whole dashboard once here */}
 
-          {/* <Route element={<ProtectedRoute />}> */}
+          <Route element={<ProtectedRoute />}>
             <Route element={<Dash_Board />}>
               <Route path="/overview" element={<Totals />} />
               <Route path="/mytask" element={<MyTask />} />
               <Route path="/kanban" element={<Kanban />} />
               <Route path="/calendar" element={<Calendar />} />
             </Route>
-          {/* </Route> */}
+          </Route>
 
           <Route path="/test" element={<Test />} />
           <Route path="*" element={<div className="p-4">Page Not Found</div>} />
         </Routes>
       </Router>
     </PrimeReactProvider>
-  // </AuthProvider>
+  </AuthProvider>
 );
 
 createRoot(document.getElementById("root")).render(

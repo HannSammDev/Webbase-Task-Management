@@ -38,7 +38,7 @@ const getPriorityBadge = (priority) => {
 
 const getStatusBadge = (status) => {
   switch (status?.toLowerCase()) {
-    case "done":
+    case "Completed":
       return {
         bg: "bg-green-100 dark:bg-green-900/30",
         text: "text-green-700 dark:text-green-300",
@@ -94,7 +94,7 @@ const getStatusDotColor = (status) => {
       return "bg-yellow-500";
     case "overdue":
       return "bg-red-500";
-    case "done":
+    case "completed":
       return "bg-green-500";
     default:
       return "bg-gray-400";
@@ -127,7 +127,7 @@ export const MyTask = () => {
   const [openDropdown, setOpenDropdown] = useState(null); // Track which task's dropdown is open
 
   // Available status options for tasks
-  const statusOptions = ["To do", "In Progress", "Review", "Done"];
+  const statusOptions = ["To do", "In Progress", "Review", "Completed"];
 
   // Filter tasks based on the active tab
   const filteredTasks =
@@ -186,7 +186,7 @@ export const MyTask = () => {
     }
   };
 
-  const tabs = ["All", "To do", "Doing", "Done"];
+  const tabs = ["All", "To do", "Doing", "Completed"];
 
   const { user } = useAuth();
   useEffect(() => {
@@ -302,7 +302,7 @@ export const MyTask = () => {
                     </td>
                     <td
                       className={`px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 ${
-                        task.status === "done"
+                        task.status === "Completed"
                           ? "line-through text-gray-400 dark:text-gray-500"
                           : ""
                       }`}

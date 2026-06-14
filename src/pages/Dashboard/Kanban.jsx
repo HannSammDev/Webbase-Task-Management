@@ -1,9 +1,17 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { db } from "../../Config/firebase";
-import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  doc,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
 
 import { TabView, TabPanel } from "primereact/tabview";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { useAuth } from "../../Auth/AuthContex";
 
 // ─── Firestore status values → internal column ids ────────────────────────────
 // These strings must exactly match what you store in Firestore's "status" field
@@ -421,11 +429,15 @@ const TimelineView = ({ tasks }) => {
 export const Kanban = () => {
   // null = loading, array = loaded
   const [tasks, setTasks] = useState(null);
-
+  const { user } = useAuth();
   // ── Fetch flat "tasks" collection from Firestore ──────────────────────────
   useEffect(() => {
-    const unsubscribe = onSnapshot(
+    const q = query(
       collection(db, "tasks"),
+      where("assignedTo", "==", user.uid),
+    );
+    const unsubscribe = onSnapshot(
+      q,
       (snapshot) => {
         const data = snapshot.docs.map((d) => ({
           id: d.id,

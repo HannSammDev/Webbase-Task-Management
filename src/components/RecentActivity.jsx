@@ -6,6 +6,8 @@ import {
   query,
   orderBy,
   limit,
+  getDoc,
+  doc,
 } from "firebase/firestore";
 
 import { Divider } from "primereact/divider";
@@ -14,36 +16,37 @@ import {
   FiCheckCircle,
   FiPlusCircle,
   FiArrowRightCircle,
-  FiPlusSquare,
 } from "react-icons/fi";
+import { useAuth } from "../Auth/AuthContex";
 
 const getActivityInfo = (task) => {
   switch (task.status) {
-    case "completed":
+    case "Completed":
       return {
         icon: <FiCheckCircle className="mt-0.5 text-green-500" />,
-        label: `${task.assignedTo} completed the task`,
+        label: `${task.assignedTo.username} completed the task`,
       };
-    case "in-review":
+    case "Review":
       return {
         icon: <FiArrowRightCircle className="mt-0.5 text-yellow-500" />,
-        label: `${task.assignedTo} moved the task to review`,
+        label: `${task.assignedTo.username} moved the task to review`,
       };
-    case "in-progress":
+    case "In Progress":
       return {
         icon: <FiArrowRightCircle className="mt-0.5 text-blue-500" />,
-        label: `${task.assignedTo} started the task`,
+        label: `${task.assignedTo.username} started the task`,
       };
     default:
       return {
         icon: <FiPlusCircle className="mt-0.5 text-blue-500" />,
-        label: `${task.assignedTo} added a new task`,
+        label: `${task.assignedTo.username} added a new task`,
       };
   }
 };
 
 export const RecentActivity = () => {
   const [recentTasks, setRecentTasks] = useState([]);
+  const { user } = useAuth();
 
   useEffect(() => {
     const q = query(
@@ -52,13 +55,36 @@ export const RecentActivity = () => {
       limit(5),
     );
 
+    // ✅ onSnapshot kept — async fetch inside
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const recentTasks = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const fetchTasks = async () => {
+        const tasks = await Promise.all(
+          snapshot.docs.map(async (document) => {
+            const task = { id: document.id, ...document.data() };
 
-      setRecentTasks(recentTasks);
+            try {
+              const userDoc = await getDoc(doc(db, "users", task.assignedTo));
+              const username = userDoc.exists()
+                ? userDoc.data().username
+                : "Unknown";
+
+              return {
+                ...task,
+                assignedTo: { uid: task.assignedTo, username },
+              };
+            } catch (error) {
+              return {
+                ...task,
+                assignedTo: { uid: task.assignedTo, username: "Unknown" },
+              };
+            }
+          }),
+        );
+
+        setRecentTasks(tasks);
+      };
+
+      fetchTasks();
     });
 
     return () => unsubscribe();
