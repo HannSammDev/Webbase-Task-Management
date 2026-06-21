@@ -179,7 +179,7 @@ export const Dash_Board = () => {
 
         {/* ── Sidebar ── */}
         <aside
-          className={`bg-blue-600 fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transfor border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${
+          className={`bg-blue-700 fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transfor border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}
           id="drawer-navigation"
