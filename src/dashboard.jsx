@@ -24,6 +24,8 @@ export const Dash_Board = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
+  const {isAdmin} = useAuth()
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
@@ -90,8 +92,7 @@ export const Dash_Board = () => {
                 />
               </div>
             </form>
-
-            <AddTaskForm />
+            {isAdmin && <AddTaskForm />}
 
             {/* ── Profile Dropdown ── */}
             <div className="relative ml-3" ref={dropdownRef}>

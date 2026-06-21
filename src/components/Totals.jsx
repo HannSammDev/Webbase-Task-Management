@@ -9,6 +9,7 @@ import { db } from "../Config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { RecentActivity } from "./RecentActivity";
 import { Calendar } from "./Calendar";
+// import { useAuth } from "../Auth/AuthContex";
 
 // ✅ Status constants matching your Firestore exactly
 const TASK_STATUS = {
@@ -18,6 +19,7 @@ const TASK_STATUS = {
 };
 
 export const Totals = () => {
+  // const { isAdmin } = useAuth();
   const [totals, setTotals] = React.useState({
     total: 0,
     completed: 0,

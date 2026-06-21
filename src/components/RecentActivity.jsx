@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../Config/firebase";
+import { where } from "firebase/firestore";
 import {
   collection,
   onSnapshot,
@@ -46,16 +47,25 @@ const getActivityInfo = (task) => {
 
 export const RecentActivity = () => {
   const [recentTasks, setRecentTasks] = useState([]);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
-    const q = query(
-      collection(db, "tasks"),
-      orderBy("createdAt", "desc"),
-      limit(5),
-    );
+    const tasksRef = collection(db, "tasks");
+
+    const q = isAdmin
+      ? query(tasksRef, orderBy("createdAt", "desc"), limit(5))
+      : query(
+          tasksRef,
+          where("assignedTo", "==", user.uid),
+          orderBy("createdAt", "desc"),
+          limit(5),
+        );
 
     // ✅ onSnapshot kept — async fetch inside
+    // const q = isAdmin
+    //   ? query(tasksRef)
+    //   : query(tasksRef, where("assignedTo", "==", user.uid));
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetchTasks = async () => {
         const tasks = await Promise.all(

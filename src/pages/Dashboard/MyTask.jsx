@@ -8,6 +8,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+
 import { useAuth } from "../../Auth/AuthContex";
 
 const getPriorityBadge = (priority) => {
@@ -188,37 +189,37 @@ export const MyTask = () => {
 
   const tabs = ["All", "To do", "Doing", "Completed"];
 
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   useEffect(() => {
     setLoading(true);
 
-   const q = query(
-     collection(db, "tasks"),
-     where("assignedTo", "==", user.uid),
-   );
+    const tasksRef = collection(db, "tasks");
+    const q = isAdmin
+      ? query(tasksRef)
+      : query(tasksRef, where("assignedTo", "==", user.uid));
 
-   const unsubscribe = onSnapshot(
-     q, // 👈 just replace the first two args with just q
-     (snapshot) => {
-       const tasksData = snapshot.docs.map((doc) => ({
-         id: doc.id,
-         ...doc.data(),
-       }));
+    const unsubscribe = onSnapshot(
+      q, // 👈 just replace the first two args with just q
+      (snapshot) => {
+        const tasksData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-       tasksData.sort(
-         (a, b) =>
-           b.createdAt?.toDate()?.getTime() - a.createdAt?.toDate()?.getTime(),
-       );
-       setTasks(tasksData);
-       setError(null);
-       setLoading(false);
-     },
-     (err) => {
-       console.error("Error fetching tasks:", err);
-       setError(err.message);
-       setLoading(false);
-     },
-   );
+        tasksData.sort(
+          (a, b) =>
+            b.createdAt?.toDate()?.getTime() - a.createdAt?.toDate()?.getTime(),
+        );
+        setTasks(tasksData);
+        setError(null);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Error fetching tasks:", err);
+        setError(err.message);
+        setLoading(false);
+      },
+    );
     return () => unsubscribe();
   }, []);
 

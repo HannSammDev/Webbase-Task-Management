@@ -31,9 +31,9 @@ export const LoginForm = () => {
     }
   };
   
-  const handleClick = () => {
-    navigate('/register')
-  }
+  // const handleClick = () => {
+  //   navigate('/register')
+  // }
 
   return (
     <div className="mx-auto max-w-md w-full px-4 py-8">
@@ -119,7 +119,7 @@ export const LoginForm = () => {
               style={{ width: "100%" }}
             />
 
-            <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+            {/* <div className="text-center text-sm text-gray-600 dark:text-gray-400">
               Don&apos;t have an account?{" "}
               <button
                 onClick={handleClick}
@@ -128,7 +128,7 @@ export const LoginForm = () => {
               >
                 Create an account
               </button>
-            </div>
+            </div> */}
           </form>
         </div>
       </div>

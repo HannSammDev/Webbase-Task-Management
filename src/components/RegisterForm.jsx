@@ -41,7 +41,7 @@ export const RegisterForm = () => {
   }
 
   return (
-    <section className="   ">
+    <section className=" " >
       <div className="mx-auto max-w-md w-full mt-10 px-4 py-8 bg-white border border-gray-200 rounded-lg">
         <NavLink to="/" className="text-small">
           <span className="  text-lg text-blue-600 hover:text-blue-950">
