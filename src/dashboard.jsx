@@ -24,7 +24,7 @@ export const Dash_Board = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  const {isAdmin} = useAuth()
+  const { isAdmin } = useAuth();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -47,17 +47,18 @@ export const Dash_Board = () => {
     `flex items-center p-2 text-base font-medium rounded-lg group transition-colors duration-150 ${
       isActive
         ? "bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-white"
-        : "text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+        : "text-white text-sm hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
     }`;
-
-  const iconClass =
-    "w-6 h-6 text-gray-500 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white";
+  const iconClass = (isActive) =>
+    isActive
+      ? "w-6 h-6 text-blue-600 dark:text-blue-400"
+      : "w-6 h-6 text-white group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white";
 
   return (
     <>
       <div className="antialiased bg-gray-50 dark:bg-gray-900">
         {/* ── Top Navbar ── */}
-        <nav className="flex flex-wrap items-center justify-between bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
+        <nav className="flex flex-wrap items-center justify-between bg-blue-700 border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
           <div className="flex items-center gap-2">
             {/* Mobile menu toggle */}
             <button
@@ -70,9 +71,13 @@ export const Dash_Board = () => {
             </button>
 
             {/* Logo */}
-            <div className="flex items-center gap-3">
-              <img src="./logo2.png" className="h-10 rounded-full" alt="Logo" />
-              <span className="self-center text-blue-800 text-xl font-semibold whitespace-nowrap dark:text-white">
+            <div className="flex items-center gap-3 ">
+              <img
+                src="./logo2.png"
+                className="h-10 rounded-full border-2 border-white"
+                alt="Logo"
+              />
+              <span className="self-center text-white text-xl font-semibold whitespace-nowrap dark:text-white">
                 Dashboard
               </span>
             </div>
@@ -174,62 +179,62 @@ export const Dash_Board = () => {
 
         {/* ── Sidebar ── */}
         <aside
-          className={`fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${
+          className={`bg-blue-600 fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transfor border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}
           id="drawer-navigation"
         >
-          <div className="overflow-y-auto py-5 px-3 h-full bg-white dark:bg-gray-800">
+          <div className="overflow-y-auto py-5 px-3 h-full bg-blue-600 dark:bg-gray-800">
             {/* Primary nav */}
             <ul className="space-y-2">
               <li>
-                <NavLink
-                  to="/overview"
-                  className={navClass}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <FiHome className={iconClass} />
-                  <span className="ml-3">Overview</span>
+                <NavLink to="/overview" onClick={() => setSidebarOpen(false)}>
+                  {({ isActive }) => (
+                    <div className={navClass({ isActive })}>
+                      <FiHome className={iconClass(isActive)} />
+                      <span className="ml-3">Overview</span>
+                    </div>
+                  )}
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  to="/mytask"
-                  className={navClass}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <FiClipboard className={iconClass} />
-                  <span className="ml-3">My Tasks</span>
+                <NavLink to="/mytask" onClick={() => setSidebarOpen(false)}>
+                  {({ isActive }) => (
+                    <div className={navClass({ isActive })}>
+                      <FiClipboard className={iconClass(isActive)} />
+                      <span className="ml-3">Task</span>
+                    </div>
+                  )}
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  to="/kanban"
-                  className={navClass}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <FiGrid className={iconClass} />
-                  <span className="ml-3">Kanban</span>
+                <NavLink to="/kanban" onClick={() => setSidebarOpen(false)}>
+                  {({ isActive }) => (
+                    <div className={navClass({ isActive })}>
+                      <FiGrid className={iconClass(isActive)} />
+                      <span className="ml-3">Kanban</span>
+                    </div>
+                  )}
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  to="/calendar"
-                  className={navClass}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <FiCalendar className={iconClass} />
-                  <span className="ml-3">Calendar</span>
+                <NavLink to="/calendar" onClick={() => setSidebarOpen(false)}>
+                  {({ isActive }) => (
+                    <div className={navClass({ isActive })}>
+                      <FiCalendar className={iconClass(isActive)} />
+                      <span className="ml-3">Calendar</span>
+                    </div>
+                  )}
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  to="/workspace"
-                  className={navClass}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <FiBriefcase className={iconClass} />
-                  <span className="ml-3">Workspace</span>
+                <NavLink to="/workspace" onClick={() => setSidebarOpen(false)}>
+                  {({ isActive }) => (
+                    <div className={navClass({ isActive })}>
+                      <FiBriefcase className={iconClass(isActive)} />
+                      <span className="ml-3">Workspace</span>
+                    </div>
+                  )}
                 </NavLink>
               </li>
             </ul>
@@ -237,36 +242,39 @@ export const Dash_Board = () => {
             {/* Secondary nav */}
             <ul className="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
               <li>
-                <NavLink
-                  to="/project"
-                  className={navClass}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <FiArchive className={iconClass} />
-                  <span className="ml-3">Project</span>
+                <NavLink to="/project" onClick={() => setSidebarOpen(false)}>
+                  {({ isActive }) => (
+                    <div className={navClass({ isActive })}>
+                      <FiArchive className={iconClass(isActive)} />
+                      <span className="ml-3">Project</span>
+                    </div>
+                  )}
                 </NavLink>
               </li>
               <li>
-                <NavLink
-                  to="/team"
-                  className={navClass}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <FiUsers className={iconClass} />
-                  <span className="ml-3">Team</span>
+                <NavLink to="/team" onClick={() => setSidebarOpen(false)}>
+                  {({ isActive }) => (
+                    <div className={navClass({ isActive })}>
+                      <FiUsers className={iconClass(isActive)} />
+                      <span className="ml-3">Team</span>
+                    </div>
+                  )}
                 </NavLink>
               </li>
               <li>
                 <NavLink
                   to="/notifications"
-                  className={navClass}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <FiBell className={iconClass} />
-                  <span className="ml-3">Notifications</span>
-                  <span className="bg-red-100 text-red-800 text-xs font-bold ml-3 px-2 py-1 rounded-full dark:bg-red-900 dark:text-red-300">
-                    3
-                  </span>
+                  {({ isActive }) => (
+                    <div className={navClass({ isActive })}>
+                      <FiBell className={iconClass(isActive)} />
+                      <span className="ml-3">Notifications</span>
+                      <span className="bg-red-100 text-red-800 text-xs font-bold ml-3 px-2 py-1 rounded-full dark:bg-red-900 dark:text-red-300">
+                        3
+                      </span>
+                    </div>
+                  )}
                 </NavLink>
               </li>
             </ul>
