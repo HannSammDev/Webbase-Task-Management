@@ -249,17 +249,17 @@ export const MyTask = () => {
         {/* Filter Buttons */}
         <div className="flex gap-3 px-6 mb-6">
           {tabs.map((tab) => (
-            <button
+            <a
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-all border ${
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition-all border ${
                 activeTab === tab
-                  ? "bg-gray-900 text-white border-gray-900 dark:bg-gray-100 dark:text-gray-900"
-                  : "bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+                  ? "  text-blue-500  border-none underline dark:bg-gray-100 dark:text-gray-900"
+                  : "bg-white font-bold text-gray-700 border-none dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
               }`}
             >
               {tab}
-            </button>
+            </a>
           ))}
         </div>
 

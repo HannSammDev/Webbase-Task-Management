@@ -14,6 +14,7 @@ import {
   FiUsers,
   FiBell,
 } from "react-icons/fi";
+import { FaUserCircle } from "react-icons/fa";
 import { AddTaskForm } from "./components/AddTaskForm";
 import { NavLink, Outlet, useNavigate } from "react-router-dom"; // ✅ NavLink imported
 
@@ -66,7 +67,10 @@ export const Dash_Board = () => {
               onClick={() => setSidebarOpen((prev) => !prev)}
               className="p-2 text-gray-600 rounded-lg cursor-pointer md:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
             >
-              <FiMenu className="w-6 h-6" aria-hidden="true" />
+              <FiMenu
+                className="w-6 h-6 text-white hover:text-black"
+                aria-hidden="true"
+              />
               <span className="sr-only">Toggle sidebar</span>
             </button>
 
@@ -107,11 +111,12 @@ export const Dash_Board = () => {
                 className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
               >
                 <span className="sr-only">Open user menu</span>
-                <img
+                {/* <img
                   className="w-8 h-8 rounded-full"
-                  src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/michael-gough.png"
+                  src="https://i.pravatar.cc/150?img=3"
                   alt="user photo"
-                />
+                /> */}
+                <FaUserCircle className="w-8 h-8 text-gray-300 border-2 border-amber-50 rounded-full" />
               </button>
 
               {dropdownOpen && (
@@ -184,7 +189,7 @@ export const Dash_Board = () => {
           } md:translate-x-0`}
           id="drawer-navigation"
         >
-          <div className="overflow-y-auto py-5 px-3 h-full bg-blue-600 dark:bg-gray-800">
+          <div className="overflow-y-auto py-5 px-3 h-full dark:bg-gray-800">
             {/* Primary nav */}
             <ul className="space-y-2">
               <li>
