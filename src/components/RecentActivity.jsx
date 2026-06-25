@@ -101,7 +101,7 @@ export const RecentActivity = () => {
   }, []);
 
   return (
-    <div className="bg-white border-2 p-4 rounded-lg border-gray-300 dark:border-gray-600 max-h-96 md:max-h-[18rem] overflow-y-auto">
+    <div className="bg-white border-2 p-4 rounded-lg border-gray-300 dark:border-gray-600 overflow-y-auto">
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
           Recent activity

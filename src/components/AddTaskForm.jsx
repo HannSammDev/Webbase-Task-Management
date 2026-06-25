@@ -123,9 +123,11 @@ const {user} = useAuth()
         onClick={() => setVisible(true)}
         icon={<FiPlusCircle className="mr-2" />}
         label="Add Task"
-        severity="info"
+        // severity="info"
         size="small"
         rounded
+
+        style={{ backgroundColor:'#f7f3f3' }}
       />
 
       <Dialog
