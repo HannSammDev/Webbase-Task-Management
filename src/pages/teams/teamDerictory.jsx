@@ -1,0 +1,124 @@
+import React, { useState } from "react";
+import { FiMoreHorizontal, FiChevronDown } from "react-icons/fi";
+import { FaUserCircle } from "react-icons/fa";
+
+const members = [
+  {
+    id: 1,
+    name: "Gina May Lada",
+    role: "Frontend Developer",
+    activeTasks: 3,
+    status: "Active Now",
+  },
+  {
+    id: 2,
+    name: "Sam Somin",
+    role: "Frontend Developer",
+    activeTasks: 3,
+    status: "Active Now",
+  },
+  {
+    id: 3,
+    name: "Aarnt McVenenn",
+    role: "Frontend Developer",
+    activeTasks: 3,
+    status: "Active Now",
+  },
+  {
+    id: 4,
+    name: "Canmta Limd",
+    role: "Frontend Developer",
+    activeTasks: 3,
+    status: "Active Now",
+  },
+  {
+    id: 5,
+    name: "Daniet Ruan",
+    role: "Frontend Developer",
+    activeTasks: 3,
+    status: "Active Now",
+  },
+];
+
+export const TeamDirectory = () => {
+  const [openMenu, setOpenMenu] = useState(null);
+
+  return (
+    <div className="bg-white border border-gray-200  mb-3 rounded-xl p-4 dark:bg-gray-800 dark:border-gray-700">
+      {/* Header */}
+      <h2 className="text-base font-semibold text-gray-800 dark:text-white mb-4">
+        Team Directory
+      </h2>
+
+      {/* Member List */}
+      <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+        {members.map((member) => (
+          <li
+            key={member.id}
+            className="flex items-center justify-between py-3 gap-4"
+          >
+            {/* Avatar + Info */}
+            <div className="flex items-center gap-3 min-w-0">
+              <FaUserCircle className="w-10 h-10 text-gray-400 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
+                  {member.name}
+                </p>
+                <span className="inline-block mt-1 text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
+                  {member.role}
+                </span>
+              </div>
+            </div>
+
+            {/* Active Tasks */}
+            <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              {member.activeTasks} Active Tasks
+            </span>
+
+            {/* Status Badge */}
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full whitespace-nowrap dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+              {member.status}
+            </span>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1 relative">
+              <button
+                onClick={() =>
+                  setOpenMenu(openMenu === member.id ? null : member.id)
+                }
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500"
+              >
+                <FiMoreHorizontal className="w-4 h-4" />
+              </button>
+              <button className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500">
+                <FiChevronDown className="w-4 h-4" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {openMenu === member.id && (
+                <div className="absolute right-0 top-8 z-10 w-40 bg-white border border-gray-200 rounded-xl shadow-md dark:bg-gray-700 dark:border-gray-600">
+                  <ul className="py-1 text-sm text-gray-700 dark:text-gray-300">
+                    {["View profile", "Assign task", "Remove member"].map(
+                      (action) => (
+                        <li key={action}>
+                          <button
+                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 ${
+                              action === "Remove member" ? "text-red-500" : ""
+                            }`}
+                          >
+                            {action}
+                          </button>
+                        </li>
+                      ),
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};

@@ -13,6 +13,7 @@ import { Test } from "./pages/test";
 import { RegisterForm } from "./components/RegisterForm";
 import { AuthProvider } from "./Auth/AuthContex";
 import { ProtectedRoute } from "./Auth/ProtectedRoute";
+import { Teams } from "./pages/teams/teams";
 const App = () => (
   <AuthProvider>
     <PrimeReactProvider>
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/mytask" element={<MyTask />} />
               <Route path="/kanban" element={<Kanban />} />
               <Route path="/calendar" element={<Calendar />} />
+              <Route path="/team" element={<Teams/>} />
             </Route>
           </Route>
 
