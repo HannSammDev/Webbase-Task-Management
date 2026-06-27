@@ -11,13 +11,20 @@ export const Teams = () => {
   return (
     <>
       {/* ── Page Header ── */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-          Team Members
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Manage your team
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+            Team Members
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Manage your team
+          </p>
+        </div>
+
+        <button className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-150">
+          <span>+</span>
+          Add Member
+        </button>
       </div>
 
       {/* ── Stats Cards ── */}

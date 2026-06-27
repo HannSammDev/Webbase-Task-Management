@@ -23,11 +23,11 @@ const primaryLinks = [
   { to: "/mytask", icon: FiClipboard, label: "Task" },
   { to: "/kanban", icon: FiGrid, label: "Kanban" },
   { to: "/calendar", icon: FiCalendar, label: "Calendar" },
-  { to: "/workspace", icon: FiBriefcase, label: "Workspace" },
+  // { to: "/workspace", icon: FiBriefcase, label: "Workspace" },
 ];
 
 const secondaryLinks = [
-  { to: "/project", icon: FiArchive, label: "Project" },
+  // { to: "/project", icon: FiArchive, label: "Project" },
   { to: "/team", icon: FiUsers, label: "Team" },
   { to: "/notifications", icon: FiBell, label: "Notifications", badge: 3 },
 ];
