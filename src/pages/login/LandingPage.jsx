@@ -1,6 +1,4 @@
-import React from "react";
-
-import { LoginForm } from "../../components/loginform";
+import { LoginForm } from "../../features/auth/LoginForm";
 // import Image from "react";
 export const LandingPage = () => {
   return (

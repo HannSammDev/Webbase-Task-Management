@@ -1,10 +1,9 @@
-// src/Config/AuthContex.jsx
-import { createContext, useState, useContext, useEffect } from "react";
+// src/Auth/AuthContext.jsx
+import { useState, useEffect } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../Config/firebase"; // make sure db is exported
-
-const AuthContext = createContext();
+import { AuthContext } from "./authContext";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(undefined); // undefined = still loading
@@ -36,16 +35,8 @@ export const AuthProvider = ({ children }) => {
   };
   const isAdmin = userData?.userRole === "admin";
   return (
-    <AuthContext.Provider value={{ user, userData,isAdmin, logout }}>
+    <AuthContext.Provider value={{ user, userData, isAdmin, logout }}>
       {user === undefined ? null : children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

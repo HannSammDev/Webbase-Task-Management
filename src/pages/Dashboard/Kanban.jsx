@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { db } from "../../Config/firebase";
 import {
   collection,
@@ -11,7 +11,7 @@ import {
 
 import { TabView, TabPanel } from "primereact/tabview";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { useAuth } from "../../Auth/AuthContex";
+import { useAuth } from "../../Auth/useAuth";
 
 // ─── Firestore status values → internal column ids ────────────────────────────
 // These strings must exactly match what you store in Firestore's "status" field
@@ -268,8 +268,9 @@ const BoardView = ({ columnMap }) => (
 
 // ─── List view ────────────────────────────────────────────────────────────────
 
+const SORT_ORDER = { todo: 0, inprogress: 1, review: 2, completed: 3 };
+
 const ListView = ({ tasks }) => {
-  const SORT_ORDER = { todo: 0, inprogress: 1, review: 2, completed: 3 };
   const rows = useMemo(
     () =>
       [...tasks].sort(
@@ -432,6 +433,8 @@ export const Kanban = () => {
   const { user } = useAuth();
   // ── Fetch flat "tasks" collection from Firestore ──────────────────────────
   useEffect(() => {
+    if (!user?.uid) return;
+
     const q = query(
       collection(db, "tasks"),
       where("assignedTo", "==", user.uid),
@@ -452,7 +455,7 @@ export const Kanban = () => {
       },
     );
     return () => unsubscribe();
-  }, []);
+  }, [user?.uid]);
 
   // ── Build columnMap { todo: [tasks], inprogress: [tasks], ... } ───────────
   const columnMap = useMemo(() => {

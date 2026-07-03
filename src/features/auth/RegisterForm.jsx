@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { auth } from "../Config/firebase";
-import { db } from "../Config/firebase";
+import { useState } from "react";
+import { auth, db } from "../../Config/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -12,12 +11,13 @@ import { FaArrowLeft } from "react-icons/fa";
 export const RegisterForm = () => {
   const [value, setValue] = useState({ username: "", email: "", password: "" });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -36,12 +36,13 @@ export const RegisterForm = () => {
     } catch (error) {
       console.error("Error creating user:", error);
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(true)
   }
 
   return (
-    <section className=" " >
+    <section className=" ">
       <div className="mx-auto max-w-md w-full mt-10 px-4 py-8 bg-white border border-gray-200 rounded-lg">
         <NavLink to="/" className="text-small">
           <span className="  text-lg text-blue-600 hover:text-blue-950">
@@ -119,7 +120,6 @@ export const RegisterForm = () => {
                   disabled={loading}
                   className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 />
-                 
               </div>
             </form>
           </div>

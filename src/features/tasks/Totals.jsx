@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   FiList,
   FiCheckCircle,
   FiClock,
   FiAlertTriangle,
 } from "react-icons/fi";
-import { db } from "../Config/firebase";
+import { db } from "../../Config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { RecentActivity } from "./RecentActivity";
 import { Calendar } from "./Calendar";
@@ -20,7 +20,7 @@ const TASK_STATUS = {
 
 export const Totals = () => {
   // const { isAdmin } = useAuth();
-  const [totals, setTotals] = React.useState({
+  const [totals, setTotals] = useState({
     total: 0,
     completed: 0,
     pending: 0,

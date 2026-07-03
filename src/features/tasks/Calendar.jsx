@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { db } from "../Config/firebase";
+import { useState, useMemo, useEffect } from "react";
+import { db } from "../../Config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 
 const DAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

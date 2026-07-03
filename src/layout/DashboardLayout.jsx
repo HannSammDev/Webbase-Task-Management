@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useAuth } from "./Auth/AuthContex";
-import { auth } from "./Config/firebase";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "../Auth/useAuth";
+import { auth } from "../Config/firebase";
 import { signOut } from "firebase/auth";
 import {
   FiMenu,
@@ -9,13 +9,11 @@ import {
   FiClipboard,
   FiGrid,
   FiCalendar,
-  FiBriefcase,
-  FiArchive,
   FiUsers,
   FiBell,
 } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
-import { AddTaskForm } from "./components/AddTaskForm";
+import { AddTaskForm } from "../features/tasks/AddTaskForm";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const primaryLinks = [
@@ -32,7 +30,7 @@ const secondaryLinks = [
   { to: "/notifications", icon: FiBell, label: "Notifications", badge: 3 },
 ];
 
-export const Dash_Board = () => {
+export const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, userData, isAdmin } = useAuth();

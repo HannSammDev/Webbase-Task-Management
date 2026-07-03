@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { db } from "../Config/firebase";
-import { collection, addDoc } from "firebase/firestore";
-import { useAuth } from "../Auth/AuthContex";
+import { useState, useEffect, useRef } from "react";
+import { db } from "../../Config/firebase";
+import { collection, addDoc, onSnapshot } from "firebase/firestore";
+import { useAuth } from "../../Auth/useAuth";
 
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -11,7 +11,6 @@ import { Dropdown } from "primereact/dropdown";
 import { Calendar } from "primereact/calendar";
 import { Toast } from "primereact/toast";
 import { FiPlusCircle } from "react-icons/fi";
-import { useRef } from "react";
 
 export const AddTaskForm = () => {
   const [visible, setVisible] = useState(false);
@@ -22,7 +21,25 @@ export const AddTaskForm = () => {
   const [dueDate, setDueDate] = useState(null);
   const [assignedTo, setAssignedTo] = useState("");
   const [loading, setLoading] = useState(false);
+  const [assigneeOptions, setAssigneeOptions] = useState([]);
   const toast = useRef(null);
+
+  const { user, isAdmin, userData } = useAuth();
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+      const options = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          label: data.username || data.email || doc.id,
+          value: doc.id,
+        };
+      });
+      setAssigneeOptions(options);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const priorityOptions = [
     { label: "🔵 Low", value: "low" },
@@ -35,14 +52,6 @@ export const AddTaskForm = () => {
     { label: "⏳ In Progress", value: "in-progress" },
     { label: "✅ Completed", value: "done" },
   ];
-
-  const assigneeOptions = [
-    { label: "Alice", value: "Alice" },
-    { label: "Bob", value: "Bob" },
-    { label: "Charlie", value: "Charlie" },
-  ];
-const {user} = useAuth()
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,7 +74,10 @@ const {user} = useAuth()
         status: status,
         dueDate: dueDate ? new Date(dueDate) : null,
         createdAt: new Date(),
-        assignedTo: assignedTo.trim() || user.uid,
+        assignedTo: assignedTo || user.uid,
+        createdBy: user?.uid || null,
+        createdByName: userData?.username || user?.email || null,
+        createdByRole: userData?.userRole || null,
       });
       // Reset form and close dialog
       setTitle("");
@@ -120,13 +132,18 @@ const {user} = useAuth()
     <>
       <Toast ref={toast} />
       <Button
-        onClick={() => setVisible(true)}
+        onClick={() => {
+          if (!isAdmin && user?.uid) {
+            setAssignedTo(user.uid);
+          }
+          setVisible(true);
+        }}
         icon={<FiPlusCircle className="mr-2" />}
         label="Add Task"
         // severity="info"
         size="small"
         rounded
-        style={{ backgroundColor: "white",color:'black' }}
+        style={{ backgroundColor: "white", color: "black" }}
       />
 
       <Dialog
@@ -231,24 +248,35 @@ const {user} = useAuth()
                 dateFormat="dd/mm/yy"
               />
             </div>
-            <div className="field">
-              <label
-                htmlFor="assignedTo"
-                className="block font-semibold mb-2 text-sm"
-              >
-                Assigned To
-              </label>
-              <Dropdown
-                id="assignedTo"
-                value={assignedTo} // ← Just use the value directly, not the object
-                onChange={(e) => setAssignedTo(e.value)} // ← Use e.value, not e.target.value
-                options={assigneeOptions}
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Select assignee"
-                className="w-full"
-              />
-            </div>
+            {isAdmin ? (
+              <div className="field">
+                <label
+                  htmlFor="assignedTo"
+                  className="block font-semibold mb-2 text-sm"
+                >
+                  Assigned To
+                </label>
+                <Dropdown
+                  id="assignedTo"
+                  value={assignedTo || isAdmin ? "You " : user.uid}
+                  onChange={(e) => setAssignedTo(e.value)}
+                  options={assigneeOptions}
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select assignee"
+                  className="w-full"
+                />
+              </div>
+            ) : (
+              <div className="field">
+                <label className="block font-semibold mb-2 text-sm">
+                  Assigned To
+                </label>
+                <div className="text-sm text-gray-700 dark:text-gray-200">
+                  You will be assigned to this task.
+                </div>
+              </div>
+            )}
           </div>
         </form>
       </Dialog>

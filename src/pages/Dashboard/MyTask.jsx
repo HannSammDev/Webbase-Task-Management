@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { db } from "../../Config/firebase";
 import {
   collection,
@@ -9,7 +9,7 @@ import {
   where,
 } from "firebase/firestore";
 
-import { useAuth } from "../../Auth/AuthContex";
+import { useAuth } from "../../Auth/useAuth";
 
 const getPriorityBadge = (priority) => {
   switch (priority?.toLowerCase()) {
@@ -191,7 +191,7 @@ export const MyTask = () => {
 
   const { user, isAdmin } = useAuth();
   useEffect(() => {
-    setLoading(true);
+    if (!user?.uid && !isAdmin) return;
 
     const tasksRef = collection(db, "tasks");
     const q = isAdmin
@@ -221,7 +221,7 @@ export const MyTask = () => {
       },
     );
     return () => unsubscribe();
-  }, []);
+  }, [isAdmin, user?.uid]);
 
   if (loading) {
     return (

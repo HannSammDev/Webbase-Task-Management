@@ -1,21 +1,20 @@
-import React, { useRef } from "react";
-import { auth } from "../Config/firebase";
+import { useState } from "react";
+import { auth } from "../../Config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 import { Button } from "primereact/button";
 import "primereact/resources/themes/lara-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiMail, FiLock } from "react-icons/fi";
 // import { Toast } from "primereact/toast";
 
 export const LoginForm = () => {
-  const [value, setValue] = React.useState({ email: "", password: "" });
-  const [error, setError] = React.useState("");
+  const [value, setValue] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-// const toast = useRef(null)
+  // const toast = useRef(null)
   const handleSubmit = async (event) => {
-
     event.preventDefault();
     // navigate("/overview");
     try {
@@ -24,13 +23,13 @@ export const LoginForm = () => {
       console.log("User signed in successfully");
     } catch (error) {
       console.error("Error signing in:", error);
-      // return <Toast ref={toast}/>
-      // Optionally, set an error state to display a message to the user
-      // setError(error.message); 
-      setError("Failed to sign in. Please check your credentials and try again.");
+
+      setError(
+        "Failed to sign in. Please check your credentials and try again.",
+      );
     }
   };
-  
+
   // const handleClick = () => {
   //   navigate('/register')
   // }
@@ -66,7 +65,9 @@ export const LoginForm = () => {
                   name="email"
                   type="email"
                   value={value.email}
-                  onChange={(e) => setValue({ ...value, email: e.target.value })}
+                  onChange={(e) =>
+                    setValue({ ...value, email: e.target.value })
+                  }
                   placeholder="example@gmail.com"
                   className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none dark:text-white"
                   required
@@ -91,7 +92,9 @@ export const LoginForm = () => {
                   name="password"
                   type="password"
                   value={value.password}
-                  onChange={(e) => setValue({ ...value, password: e.target.value })}
+                  onChange={(e) =>
+                    setValue({ ...value, password: e.target.value })
+                  }
                   placeholder="Enter your password"
                   className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none dark:text-white"
                   required
@@ -101,15 +104,18 @@ export const LoginForm = () => {
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                <button
-                  type="button"
+                <Link
+                  to="/forgot-password"
                   className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
             </div>
 
+            {error && (
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            )}
             <Button
               onClick={handleSubmit}
               type="submit"
