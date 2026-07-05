@@ -196,7 +196,6 @@ export const DashboardLayout = () => {
         />
 
         {/* ── Sidebar ── */}
-        {/* ── Sidebar ── */}
         <aside
           className={`bg-blue-700 fixed top-0 left-0 z-40 w-64 h-screen transition-transform border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 
           ${hideTopbar ? "pt-0" : "pt-15"} 
@@ -214,7 +213,6 @@ export const DashboardLayout = () => {
               </span>
             </div>
           )}
-
           <div className="overflow-y-auto py-5 px-3 h-full dark:bg-gray-800">
             <ul className="space-y-2">{renderLinks(primaryLinks)}</ul>
             <ul className="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">

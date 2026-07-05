@@ -45,7 +45,7 @@ export const RecentActivity = () => {
             const task = { id: document.id, ...document.data() };
 
             // Resolve assignee display name
-            let assignedUsername;
+            let assignedUsername = "Unknown";
             try {
               const userDoc = await getDoc(doc(db, "users", task.assignedTo));
               assignedUsername = userDoc.exists()

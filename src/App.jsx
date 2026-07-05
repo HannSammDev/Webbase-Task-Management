@@ -21,7 +21,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Layout />} />
           <Route path="/register" element={<RegisterForm />} />
-
           <Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/overview" element={<Totals />} />

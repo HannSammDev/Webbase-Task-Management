@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../Config/firebase"; // make sure db is exported
+import { auth, db } from "../Config/firebase"; 
 import { AuthContext } from "./authContext";
 
 export const AuthProvider = ({ children }) => {
