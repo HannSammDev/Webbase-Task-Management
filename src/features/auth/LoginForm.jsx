@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { auth } from "../../Config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-
 import { Button } from "primereact/button";
-import "primereact/resources/themes/lara-light-blue/theme.css";
-import "primereact/resources/primereact.min.css";
 import { Link, useNavigate } from "react-router-dom";
 import { FiMail, FiLock } from "react-icons/fi";
 // import { Toast } from "primereact/toast";

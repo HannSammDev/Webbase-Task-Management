@@ -1,11 +1,10 @@
 import { useState } from "react";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { collection, getDocs } from "firebase/firestore";
 import { FiAlertCircle, FiArrowLeft, FiCheckCircle, FiMail } from "react-icons/fi";
-import { auth } from "../../Config/firebase";
-import {
-  fetchSignInMethodsForEmail,
-  sendPasswordResetEmail,
-} from "firebase/auth";
 import { Link } from "react-router-dom";
+
+import { auth, db } from "../../Config/firebase";
 
 export const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -24,7 +23,7 @@ export const ForgotPassword = () => {
       case "auth/too-many-requests":
         return "Too many reset attempts. Please wait a bit and try again.";
       case "auth/user-not-found":
-        return "Email does not exist.";
+        return "No account found with that email address.";
       default:
         return err?.message || "Unable to send reset link. Please try again.";
     }
@@ -35,27 +34,34 @@ export const ForgotPassword = () => {
     setError("");
     setMessage("");
     setLoading(true);
-    const normalizedEmail = email.trim();
+
+    const trimmedEmail = email.trim();
+    const normalizedEmail = trimmedEmail.toLowerCase();
 
     try {
-      if (!normalizedEmail) {
+      if (!trimmedEmail) {
         setError("Please enter your email address.");
         return;
       }
 
-      const signInMethods = await fetchSignInMethodsForEmail(
-        auth,
-        normalizedEmail,
-      );
+      // Firebase can resolve password-reset requests even for unknown emails,
+      // so we check the app's stored users first and show a real not-found error.
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      const matchingUser = usersSnapshot.docs.find((userDoc) => {
+        const userEmail = String(userDoc.data()?.email || "")
+          .trim()
+          .toLowerCase();
 
-      // This check is reliable only when Email Enumeration Protection is disabled.
-      if (signInMethods.length === 0) {
-        setError("Email does not exist.");
+        return userEmail === normalizedEmail;
+      });
+
+      if (!matchingUser) {
+        setError("No account found with that email address.");
         return;
       }
 
-      await sendPasswordResetEmail(auth, normalizedEmail);
-      setMessage("Password reset link has been sent.");
+      await sendPasswordResetEmail(auth, trimmedEmail);
+      setMessage("Reset link has been sent.");
     } catch (err) {
       console.error("Reset password error:", err);
       setError(getResetErrorMessage(err));
@@ -63,6 +69,7 @@ export const ForgotPassword = () => {
       setLoading(false);
     }
   };
+
   return (
     <section className="min-h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
       <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">

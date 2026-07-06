@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { PrimeReactProvider } from "primereact/api";
+
 import "./index.css";
+import "primereact/resources/themes/lara-light-blue/theme.css";
+import "primereact/resources/primereact.min.css";
 import Layout from "./Layout";
 import { DashboardLayout } from "./layout/DashboardLayout";
 import { Totals } from "./features/tasks/Totals";
