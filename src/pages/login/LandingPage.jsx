@@ -2,7 +2,7 @@ import { LoginForm } from "../../features/auth/LoginForm";
 // import Image from "react";
 export const LandingPage = () => {
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-white text-slate-900  dark:text-white">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row">
         <section className="relative  flex-1 overflow-hidden bg-gradient-to-br from-sky-600 via-blue-700 to-indigo-800 px-8 py-16 text-white md:flex md:flex-col md:justify-center">
           <div className="relative z-10 max-w-xl space-y-6 backdrop-blur-sm">
@@ -41,7 +41,7 @@ export const LandingPage = () => {
         </section>
 
         <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
-          <div className="w-full max-w-xl rounded-[2rem] bg-white p-6 shadow-2xl shadow-slate-900/5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10 sm:p-10">
+          <div className="w-full max-w-xl rounded-[2rem] bg-white dark:bg-white p-6 shadow-2xl shadow-slate-900/5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10 sm:p-10">
             <LoginForm />
           </div>
         </main>

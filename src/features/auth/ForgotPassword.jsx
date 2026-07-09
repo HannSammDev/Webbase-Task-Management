@@ -1,33 +1,22 @@
 import { useState } from "react";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { collection, getDocs } from "firebase/firestore";
-import { FiAlertCircle, FiArrowLeft, FiCheckCircle, FiMail } from "react-icons/fi";
+import {
+  FiAlertCircle,
+  FiArrowLeft,
+  FiCheckCircle,
+  FiMail,
+} from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 import { auth, db } from "../../Config/firebase";
+import { getResetErrorMessage } from "../../Error/AuthErrorMessage";
 
 export const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const getResetErrorMessage = (err) => {
-    switch (err?.code) {
-      case "auth/invalid-email":
-        return "Please enter a valid email address.";
-      case "auth/missing-email":
-        return "Please enter your email address.";
-      case "auth/operation-not-allowed":
-        return "Email/password sign-in is disabled in Firebase. Enable it in the Firebase Console.";
-      case "auth/too-many-requests":
-        return "Too many reset attempts. Please wait a bit and try again.";
-      case "auth/user-not-found":
-        return "No account found with that email address.";
-      default:
-        return err?.message || "Unable to send reset link. Please try again.";
-    }
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
