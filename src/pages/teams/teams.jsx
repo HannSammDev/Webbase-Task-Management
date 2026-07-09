@@ -1,3 +1,4 @@
+import React from "react";
 import {
   FiList,
   FiCheckCircle,
@@ -6,7 +7,11 @@ import {
 } from "react-icons/fi";
 import { TeamDirectory } from "./teamDerictory";
 import { WhosWorking } from "./twhoseworking";
+// import { Modal } from "flowbite";
+import { Modal } from "../../components/shared/Modal";
+import { RegisterForm } from "../../features/auth/RegisterForm";
 export const Teams = () => {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
   return (
     <>
       {/* ── Page Header ── */}
@@ -15,15 +20,23 @@ export const Teams = () => {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
             Team Members
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Manage your team
-          </p>
         </div>
 
-        <button className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-150">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-150"
+        >
           <span>+</span>
           Add Member
         </button>
+        <Modal
+          size="2xl"
+          transition="fade"
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          <RegisterForm />
+        </Modal>
       </div>
 
       {/* ── Stats Cards ── */}

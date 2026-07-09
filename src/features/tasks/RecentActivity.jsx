@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { db } from "../../Config/firebase";
 import { where } from "firebase/firestore";
 import {
@@ -38,58 +38,81 @@ export const RecentActivity = () => {
           limit(5),
         );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchTasks = async () => {
-        const tasks = await Promise.all(
-          snapshot.docs.map(async (document) => {
-            const task = { id: document.id, ...document.data() };
+    // Tracks the latest snapshot so an older async batch can't overwrite a newer one
+    let requestId = 0;
 
-            // Resolve assignee display name
-            let assignedUsername = "Unknown";
-            try {
-              const userDoc = await getDoc(doc(db, "users", task.assignedTo));
-              assignedUsername = userDoc.exists()
-                ? userDoc.data().username
-                : "Unknown";
-            } catch {
-              assignedUsername = "Unknown";
-            }
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const currentRequest = ++requestId;
 
-            // Resolve creator info if present (createdBy)
-            let creator = null;
-            if (task.createdBy) {
+        const fetchTasks = async () => {
+          const tasks = await Promise.all(
+            snapshot.docs.map(async (document) => {
+              const task = { id: document.id, ...document.data() };
+
+              // Resolve assignee display name
+              let assignedUsername = "Unknown";
               try {
-                const creatorDoc = await getDoc(
-                  doc(db, "users", task.createdBy),
-                );
-                if (creatorDoc.exists()) {
-                  const cd = creatorDoc.data();
-                  creator = {
-                    uid: task.createdBy,
-                    username: cd.username || null,
-                    role: cd.userRole || null,
-                  };
-                } else {
+                const userDoc = await getDoc(doc(db, "users", task.assignedTo));
+                assignedUsername = userDoc.exists()
+                  ? userDoc.data().username
+                  : "Unknown";
+              } catch {
+                assignedUsername = "Unknown";
+              }
+
+              // Resolve creator info if present (createdBy)
+              let creator = null;
+              if (task.createdBy) {
+                try {
+                  const creatorDoc = await getDoc(
+                    doc(db, "users", task.createdBy),
+                  );
+                  if (creatorDoc.exists()) {
+                    const cd = creatorDoc.data();
+                    creator = {
+                      uid: task.createdBy,
+                      username: cd.username || null,
+                      role: cd.userRole || null,
+                    };
+                  } else {
+                    creator = {
+                      uid: task.createdBy,
+                      username: null,
+                      role: null,
+                    };
+                  }
+                } catch {
                   creator = { uid: task.createdBy, username: null, role: null };
                 }
-              } catch {
-                creator = { uid: task.createdBy, username: null, role: null };
               }
-            }
 
-            return {
-              ...task,
-              assignedTo: { uid: task.assignedTo, username: assignedUsername },
-              creator,
-            };
-          }),
-        );
+              return {
+                ...task,
+                assignedTo: {
+                  uid: task.assignedTo,
+                  username: assignedUsername,
+                },
+                creator,
+              };
+            }),
+          );
 
-        setRecentTasks(tasks);
-      };
+          // Only commit if a newer snapshot hasn't already started fetching
+          if (currentRequest === requestId) {
+            setRecentTasks(tasks);
+          }
+        };
 
-      fetchTasks();
-    });
+        fetchTasks();
+      },
+      (error) => {
+        // This is critical: a missing composite index (where + orderBy)
+        // fails silently without this handler, and the listener just stops.
+        console.error("RecentActivity listener error:", error);
+      },
+    );
 
     return () => unsubscribe();
   }, [user?.uid, isAdmin]);
@@ -201,7 +224,6 @@ export const RecentActivity = () => {
     // Special message when the current admin created the task
     // For 'added' actions include who added and who the task is for
     if (isActorCurrentUser) {
-      // Actor added the task
       if (actor?.uid === assigned?.uid) {
         return {
           icon: <FiPlusCircle className="mt-0.5 text-blue-500" />,
@@ -257,11 +279,8 @@ export const RecentActivity = () => {
           recentTasks.map((task, index) => {
             const { icon, label } = getActivityInfo(task);
             return (
-              <>
-                <li
-                  key={task.id}
-                  className="space-y-1 text-sm text-gray-700 dark:text-gray-200"
-                >
+              <Fragment key={task.id}>
+                <li className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
                   <div className="flex items-start gap-2">
                     {icon}
                     <span>
@@ -280,7 +299,7 @@ export const RecentActivity = () => {
                 {index < recentTasks.length - 1 && (
                   <Divider className="border-gray-300 dark:border-gray-600" />
                 )}
-              </>
+              </Fragment>
             );
           })
         )}

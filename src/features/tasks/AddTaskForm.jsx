@@ -1,16 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { addDoc, collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../Config/firebase";
-import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { useAuth } from "../../Auth/useAuth";
 
 import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
 import { Dialog } from "primereact/dialog";
+import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { Dropdown } from "primereact/dropdown";
-import { Calendar } from "primereact/calendar";
 import { Toast } from "primereact/toast";
-import { FiPlusCircle } from "react-icons/fi";
 
 export const AddTaskForm = () => {
   const [visible, setVisible] = useState(false);
@@ -28,36 +27,57 @@ export const AddTaskForm = () => {
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
-      const options = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          label: data.username || data.email || doc.id,
-          value: doc.id,
-        };
-      });
+      const options = snapshot.docs
+        .map((userDoc) => {
+          const data = userDoc.data();
+
+          return {
+            label: data.username || data.email || userDoc.id,
+            value: userDoc.id,
+            role: data.userRole || null,
+          };
+        })
+        .filter((option) => option.role !== "admin");
+
       setAssigneeOptions(options);
     });
 
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
 
   const priorityOptions = [
-    { label: "🔵 Low", value: "low" },
-    { label: "🟡 Medium", value: "medium" },
-    { label: "🔴 High", value: "high" },
+    { label: "Low", value: "low" },
+    { label: "Medium", value: "medium" },
+    { label: "High", value: "high" },
   ];
 
   const statusOptions = [
-    { label: "📝 Pending", value: "todo" },
-    { label: "⏳ In Progress", value: "in-progress" },
-    { label: "✅ Completed", value: "done" },
+    { label: "Pending", value: "todo" },
+    // { label: "In Progress", value: "in-progress" },
+    // { label: "Completed", value: "done" },
   ];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // Validate required fields
+  const assigneeOptionsWithSelf =
+    isAdmin && user
+      ? [
+          {
+            label: `${userData?.username || user.email || "Admin"} (You)`,
+            value: user.uid,
+            role: "admin",
+          },
+          ...assigneeOptions,
+        ]
+      : assigneeOptions;
+
+  const openDialog = () => {
+    setAssignedTo(user?.uid || ""); // default: self, for both admin and non-admin
+    setVisible(true);
+  };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     if (!title.trim()) {
-      toast.current.show({
+      toast.current?.show({
         severity: "warn",
         summary: "Validation Error",
         detail: "Please enter a task title",
@@ -65,30 +85,49 @@ export const AddTaskForm = () => {
       });
       return;
     }
+
+    // fallback: if admin somehow has no assignedTo set, default to self
+    const finalAssignedTo = isAdmin ? assignedTo || user.uid : user.uid;
+
+    const selectedAssignee = assigneeOptionsWithSelf.find(
+      (option) => option.value === finalAssignedTo,
+    );
+
+    if (isAdmin && !selectedAssignee) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Validation Error",
+        detail: "Please select a valid assignee",
+        life: 3000,
+      });
+      return;
+    }
+
     setLoading(true);
+
     try {
       await addDoc(collection(db, "tasks"), {
         title: title.trim(),
         description: description.trim(),
-        priority: priority,
-        status: status,
+        priority,
+        status: "todo",
         dueDate: dueDate ? new Date(dueDate) : null,
         createdAt: new Date(),
-        assignedTo: assignedTo || user.uid,
+        assignedTo: finalAssignedTo,
         createdBy: user?.uid || null,
         createdByName: userData?.username || user?.email || null,
         createdByRole: userData?.userRole || null,
       });
-      // Reset form and close dialog
+
       setTitle("");
       setDescription("");
       setPriority("low");
       setStatus("todo");
       setDueDate(null);
-      setAssignedTo("");
+      setAssignedTo(user?.uid || ""); // reset back to self, not empty
       setVisible(false);
 
-      toast.current.show({
+      toast.current?.show({
         severity: "success",
         summary: "Success",
         detail: "Task created successfully!",
@@ -96,7 +135,7 @@ export const AddTaskForm = () => {
       });
     } catch (error) {
       console.error("Error adding document: ", error);
-      toast.current.show({
+      toast.current?.show({
         severity: "error",
         summary: "Error",
         detail: `Failed to create task: ${error.message}`,
@@ -106,6 +145,16 @@ export const AddTaskForm = () => {
       setLoading(false);
     }
   };
+
+  // const openDialog = () => {
+  //   if (!isAdmin && user?.uid) {
+  //     setAssignedTo(user.uid);
+  //   } else {
+  //     setAssignedTo("");
+  //   }
+
+  //   setVisible(true);
+  // };
 
   const dialogFooter = (
     <div className="flex justify-end gap-2">
@@ -131,16 +180,11 @@ export const AddTaskForm = () => {
   return (
     <>
       <Toast ref={toast} />
+
       <Button
-        onClick={() => {
-          if (!isAdmin && user?.uid) {
-            setAssignedTo(user.uid);
-          }
-          setVisible(true);
-        }}
-        icon={<FiPlusCircle className="mr-2" />}
+        onClick={openDialog}
+        icon="pi pi-plus"
         label="Add Task"
-        // severity="info"
         size="small"
         rounded
         style={{ backgroundColor: "white", color: "black" }}
@@ -155,51 +199,48 @@ export const AddTaskForm = () => {
         footer={dialogFooter}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
           <div className="field">
-            <label htmlFor="title" className="block font-semibold mb-2 text-sm">
+            <label htmlFor="title" className="mb-2 block text-sm font-semibold">
               Task Title <span className="text-red-500">*</span>
             </label>
             <InputText
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(event) => setTitle(event.target.value)}
               placeholder="Enter task title"
               className="w-full"
             />
           </div>
 
-          {/* Description */}
           <div className="field">
             <label
               htmlFor="description"
-              className="block font-semibold mb-2 text-sm"
+              className="mb-2 block text-sm font-semibold"
             >
               Description
             </label>
             <InputTextarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(event) => setDescription(event.target.value)}
               placeholder="Enter task description (optional)"
               rows={1}
               className="w-full"
             />
           </div>
 
-          {/* Priority and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="field">
               <label
                 htmlFor="priority"
-                className="block font-semibold mb-2 text-sm"
+                className="mb-2 block text-sm font-semibold"
               >
                 Priority
               </label>
               <Dropdown
                 id="priority"
                 value={priority}
-                onChange={(e) => setPriority(e.value)}
+                onChange={(event) => setPriority(event.value)}
                 options={priorityOptions}
                 optionLabel="label"
                 optionValue="value"
@@ -211,14 +252,14 @@ export const AddTaskForm = () => {
             <div className="field">
               <label
                 htmlFor="status"
-                className="block font-semibold mb-2 text-sm"
+                className="mb-2 block text-sm font-semibold"
               >
                 Status
               </label>
               <Dropdown
                 id="status"
                 value={status}
-                onChange={(e) => setStatus(e.value)}
+                onChange={(event) => setStatus(event.value)}
                 options={statusOptions}
                 optionLabel="label"
                 optionValue="value"
@@ -228,26 +269,25 @@ export const AddTaskForm = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Due Date */}
-
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="field">
               <label
                 htmlFor="dueDate"
-                className="block font-semibold mb-2 text-sm"
+                className="mb-2 block text-sm font-semibold"
               >
                 Due Date
               </label>
               <Calendar
                 id="dueDate"
                 value={dueDate}
-                onChange={(e) => setDueDate(e.value)}
+                onChange={(event) => setDueDate(event.value)}
                 placeholder="Pick a date"
                 className="w-full"
                 showIcon
                 dateFormat="dd/mm/yy"
               />
             </div>
+
             {isAdmin ? (
               <div className="field">
                 <label
@@ -258,9 +298,9 @@ export const AddTaskForm = () => {
                 </label>
                 <Dropdown
                   id="assignedTo"
-                  value={assignedTo || isAdmin ? "You " : user.uid}
+                  value={assignedTo}
                   onChange={(e) => setAssignedTo(e.value)}
-                  options={assigneeOptions}
+                  options={assigneeOptionsWithSelf}
                   optionLabel="label"
                   optionValue="value"
                   placeholder="Select assignee"
@@ -269,7 +309,7 @@ export const AddTaskForm = () => {
               </div>
             ) : (
               <div className="field">
-                <label className="block font-semibold mb-2 text-sm">
+                <label className="mb-2 block text-sm font-semibold">
                   Assigned To
                 </label>
                 <div className="text-sm text-gray-700 dark:text-gray-200">
