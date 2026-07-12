@@ -220,7 +220,6 @@ export const RecentActivity = () => {
         label: `${actorName} started the task for ${assigneeName}`,
       };
     }
-
     // Special message when the current admin created the task
     // For 'added' actions include who added and who the task is for
     if (isActorCurrentUser) {

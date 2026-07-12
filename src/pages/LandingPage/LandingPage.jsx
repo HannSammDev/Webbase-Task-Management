@@ -1,5 +1,6 @@
 import { LoginForm } from "../../features/auth/LoginForm";
-// import Image from "react";
+
+
 export const LandingPage = () => {
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-white text-slate-900  dark:text-white">

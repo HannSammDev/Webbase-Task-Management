@@ -14,6 +14,7 @@ export const LoginForm = () => {
   // const toast = useRef(null)
  
 
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
     // navigate("/overview");
@@ -30,10 +31,6 @@ export const LoginForm = () => {
       );
     }
   };
-
-  // const handleClick = () => {
-  //   navigate('/register')
-  // }
 
   return (
     <div className="mx-auto max-w-md w-full px-4 py-8">
@@ -52,13 +49,13 @@ export const LoginForm = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-700"
               >
                 Email
               </label>
               <div className="mt-2 flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-200 bg-gray-50 dark:bg-gray-50 px-3 py-2 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500   dark:text-white">
                 <FiMail
-                  className="h-5 w-5 text-gray-400 dark:text-gray-300"
+                  className="h-5 w-5 text-gray-400 dark:text-gray-400"
                   aria-hidden="true"
                 />
                 <input
@@ -79,13 +76,13 @@ export const LoginForm = () => {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-200"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-700"
               >
                 Password
               </label>
               <div className="mt-2 flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-200 bg-gray-50 dark:bg-gray-50 px-3 py-2 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500  dark:text-white">
                 <FiLock
-                  className="h-5 w-5 text-gray-400 dark:text-gray-300"
+                  className="h-5 w-5 text-gray-400 dark:text-gray-400"
                   aria-hidden="true"
                 />
                 <input
@@ -126,16 +123,7 @@ export const LoginForm = () => {
               style={{ width: "100%" }}
             />
 
-            {/* <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-              Don&apos;t have an account?{" "}
-              <button
-                onClick={handleClick}
-                type="button"
-                className="font-medium text-blue-600 hover:text-blue-700 hover:underline mt-2 dark:text-blue-400"
-              >
-                Create an account
-              </button>
-            </div> */}
+            
           </form>
         </div>
       </div>
