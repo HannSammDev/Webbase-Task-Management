@@ -1,51 +1,106 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiMoreHorizontal, FiChevronDown } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 
+import { db } from "../../Config/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 // Sample data
-const members = [
-  {
-    id: 1,
-    name: "Gina May Lada",
-    role: "Frontend Developer",
-    activeTasks: 3,
-    status: "Active Now",
-  },
-  {
-    id: 2,
-    name: "Sam Somin",
-    role: "Frontend Developer",
-    activeTasks: 3,
-    status: "Active Now",
-  },
-  {
-    id: 3,
-    name: "Aarnt McVenenn",
-    role: "Frontend Developer",
-    activeTasks: 3,
-    status: "Active Now",
-  },
-  {
-    id: 4,
-    name: "Canmta Limd",
-    role: "Frontend Developer",
-    activeTasks: 3,
-    status: "Active Now",
-  },
-  {
-    id: 5,
-    name: "Daniet Ruan",
-    role: "Frontend Developer",
-    activeTasks: 3,
-    status: "Active Now",
-  },
-];
+// const members = [
+//   {
+//     id: 1,
+//     name: "Gina May Lada",
+//     role: "Frontend Developer",
+//     activeTasks: 3,
+//     status: "Active Now",
+//   },
+//   {
+//     id: 2,
+//     name: "Sam Somin",
+//     role: "Frontend Developer",
+//     activeTasks: 3,
+//     status: "Active Now",
+//   },
+//   {
+//     id: 3,
+//     name: "Aarnt McVenenn",
+//     role: "Frontend Developer",
+//     activeTasks: 3,
+//     status: "Active Now",
+//   },
+//   {
+//     id: 4,
+//     name: "Canmta Limd",
+//     role: "Frontend Developer",
+//     activeTasks: 3,
+//     status: "Active Now",
+//   },
+//   {
+//     id: 5,
+//     name: "Daniet Ruan",
+//     role: "Frontend Developer",
+//     activeTasks: 3,
+//     status: "Active Now",
+//   },
+// ];
 
 export const TeamDirectory = () => {
   const [openMenu, setOpenMenu] = useState(null);
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    const membersRef = collection(db, "users");
+    const tasksRef = collection(db, "tasks");
+
+    let membersData = [];
+    let tasksData = [];
+
+    const mergeAndSetMembers = () => {
+      const merged = membersData.map((member) => {
+        const taskCount = tasksData.filter(
+          (task) => task.assignedTo === member.id,
+        ).length;
+        return { ...member, activeTasks: taskCount };
+      });
+      setMembers(merged);
+      console.log("Merged Member Data:", merged);
+    };
+
+    const unsubscribeMembers = onSnapshot(
+      membersRef,
+      (snapshot) => {
+        membersData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        mergeAndSetMembers();
+      },
+      (error) => {
+        console.error("Error fetching members:", error);
+      },
+    );
+
+    const unsubscribeTasks = onSnapshot(
+      tasksRef,
+      (snapshot) => {
+        tasksData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        mergeAndSetMembers();
+      },
+      (error) => {
+        console.error("Error fetching tasks:", error);
+      },
+    );
+
+    return () => {
+      unsubscribeMembers();
+      unsubscribeTasks();
+    };
+  }, []);
 
   return (
-    <div className="bg-white border border-gray-200  mb-3 rounded-xl p-4 dark:bg-gray-800 dark:border-gray-700">
+    <div className="bg-white border border-gray-200 mb-3 rounded-xl p-4 dark:bg-gray-800 dark:border-gray-700">
       {/* Header */}
       <h2 className="text-base font-semibold text-gray-800 dark:text-white mb-4">
         Team Directory
@@ -56,34 +111,34 @@ export const TeamDirectory = () => {
         {members.map((member) => (
           <li
             key={member.id}
-            className="flex items-center justify-between py-3 gap-4"
+            className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-4 py-3"
           >
             {/* Avatar + Info */}
             <div className="flex items-center gap-3 min-w-0">
               <FaUserCircle className="w-10 h-10 text-gray-400 flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
-                  {member.name}
+                  {member.username || "Unnamed"}
                 </p>
                 <span className="inline-block mt-1 text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                  {member.role}
+                  {member.userRole || "No role"}
                 </span>
               </div>
             </div>
 
             {/* Active Tasks */}
             <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {member.activeTasks} Active Tasks
+              {member.activeTasks ?? 0} Active Tasks
             </span>
 
             {/* Status Badge */}
-            <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full whitespace-nowrap dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full whitespace-nowrap w-fit dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-700">
               <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-              {member.status}
+              {member.status || "Active"}
             </span>
 
             {/* Actions */}
-            <div className="flex items-center gap-1 relative">
+            <div className="flex items-center gap-1 relative justify-end">
               <button
                 onClick={() =>
                   setOpenMenu(openMenu === member.id ? null : member.id)

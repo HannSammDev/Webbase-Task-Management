@@ -7,11 +7,12 @@ import {
 } from "react-icons/fi";
 import { TeamDirectory } from "./teamDerictory";
 import { WhosWorking } from "./twhoseworking";
-// import { Modal } from "flowbite";
 import { Modal } from "../../components/shared/Modal";
 import { RegisterForm } from "../../features/auth/RegisterForm";
+import { useAuth } from "../../Auth/useAuth";
 export const Teams = () => {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const { isAdmin } = useAuth();
   return (
     <>
       {/* ── Page Header ── */}
@@ -22,13 +23,15 @@ export const Teams = () => {
           </h1>
         </div>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-150"
-        >
-          <span>+</span>
-          Add Member
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-150"
+          >
+            <span>+</span>
+            Add Member
+          </button>
+        )}
         <Modal
           size="2xl"
           transition="fade"

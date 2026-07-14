@@ -455,7 +455,7 @@ function YearView({ cursor, events }) {
 // ── Main Calendar ────────────────────────────────────────────────
 
 export const Calendar = () => {
-  const [view, setViewState] = useState("week");
+  const [view, setViewState] = useState("month");
   const [cursor, setCursor] = useState(new Date(todayBase));
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
