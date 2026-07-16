@@ -25,3 +25,6 @@ dist-ssr
 
 .vercel
 .env*
+
+server/serviceAccountKey.json
+server/node_modules

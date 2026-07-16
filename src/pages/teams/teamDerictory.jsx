@@ -3,49 +3,12 @@ import { FiMoreHorizontal, FiChevronDown } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 
 import { db } from "../../Config/firebase";
-import { collection, onSnapshot } from "firebase/firestore";
-// Sample data
-// const members = [
-//   {
-//     id: 1,
-//     name: "Gina May Lada",
-//     role: "Frontend Developer",
-//     activeTasks: 3,
-//     status: "Active Now",
-//   },
-//   {
-//     id: 2,
-//     name: "Sam Somin",
-//     role: "Frontend Developer",
-//     activeTasks: 3,
-//     status: "Active Now",
-//   },
-//   {
-//     id: 3,
-//     name: "Aarnt McVenenn",
-//     role: "Frontend Developer",
-//     activeTasks: 3,
-//     status: "Active Now",
-//   },
-//   {
-//     id: 4,
-//     name: "Canmta Limd",
-//     role: "Frontend Developer",
-//     activeTasks: 3,
-//     status: "Active Now",
-//   },
-//   {
-//     id: 5,
-//     name: "Daniet Ruan",
-//     role: "Frontend Developer",
-//     activeTasks: 3,
-//     status: "Active Now",
-//   },
-// ];
+import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 
 export const TeamDirectory = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const [members, setMembers] = useState([]);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const membersRef = collection(db, "users");
@@ -62,7 +25,6 @@ export const TeamDirectory = () => {
         return { ...member, activeTasks: taskCount };
       });
       setMembers(merged);
-      console.log("Merged Member Data:", merged);
     };
 
     const unsubscribeMembers = onSnapshot(
@@ -98,6 +60,45 @@ export const TeamDirectory = () => {
       unsubscribeTasks();
     };
   }, []);
+
+const handleRemoveMember = async (memberId, memberName) => {
+  const confirmed = window.confirm(
+    `Remove ${memberName || "this member"} from the team? This will permanently delete their account.`,
+  );
+
+  if (!confirmed) return;
+
+  try {
+    setDeletingId(memberId);
+
+    // 1. Delete Firebase Authentication account
+    const response = await fetch(
+      `http://localhost:5000/delete-user/${memberId}`,
+      {
+        method: "DELETE",
+      },
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || "Failed to delete authentication user.",
+      );
+    }
+
+    // 2. Delete Firestore document
+    await deleteDoc(doc(db, "users", memberId));
+
+    console.log("User deleted successfully.");
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  } finally {
+    setDeletingId(null);
+    setOpenMenu(null);
+  }
+};
 
   return (
     <div className="bg-white border border-gray-200 mb-3 rounded-xl p-4 dark:bg-gray-800 dark:border-gray-700">
@@ -159,11 +160,24 @@ export const TeamDirectory = () => {
                       (action) => (
                         <li key={action}>
                           <button
-                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 ${
+                            disabled={deletingId === member.id}
+                            onClick={() => {
+                              if (action === "Remove member") {
+                                handleRemoveMember(member.id, member.username);
+                              } else if (action === "View profile") {
+                                // Navigate to profile page or show profile modal
+                              } else if (action === "Assign task") {
+                                // Navigate to assign task page or show assign task modal
+                              }
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 ${
                               action === "Remove member" ? "text-red-500" : ""
                             }`}
                           >
-                            {action}
+                            {action === "Remove member" &&
+                            deletingId === member.id
+                              ? "Removing..."
+                              : action}
                           </button>
                         </li>
                       ),
