@@ -55,6 +55,8 @@ export const Totals = () => {
   const completionRate =
     totals.total > 0 ? Math.round((totals.completed / totals.total) * 100) : 0;
 
+   
+  
   return (
     <>
       {/* ✅ Stat Cards */}
