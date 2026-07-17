@@ -187,7 +187,7 @@ export const AddTaskForm = () => {
         label="Add Task"
         size="small"
         rounded
-        style={{ backgroundColor: "white", color: "black" }}
+        style={{ backgroundColor: "#93C5FD", color: "black", border: "none" }}
       />
 
       <Dialog

@@ -1,21 +1,128 @@
-import React from "react";
-import {
-  FiList,
-  FiCheckCircle,
-  FiClock,
-  FiAlertTriangle,
-} from "react-icons/fi";
+import React, { useEffect, useState } from "react";
+import { FiList, FiCheckCircle, FiClock, FiUser } from "react-icons/fi";
+import { Card } from "primereact/card";
+
 import { TeamDirectory } from "./teamDerictory";
 import { WhosWorking } from "./twhoseworking";
 import { Modal } from "../../components/shared/Modal";
 import { RegisterForm } from "../../features/auth/RegisterForm";
 import { useAuth } from "../../Auth/useAuth";
+import { db } from "../../Config/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
+
 export const Teams = () => {
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [members, setMembers] = useState([]);
+
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    onTrack: 0,
+    atCapacity: 0,
+    available: 0,
+  });
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const { isAdmin } = useAuth();
+
+  useEffect(() => {
+    let users = [];
+    let tasks = [];
+
+    const calculateStats = () => {
+      // Count tasks per member
+      const taskCount = {};
+
+      tasks.forEach((task) => {
+        if (!task.assignedTo) return;
+
+        taskCount[task.assignedTo] = (taskCount[task.assignedTo] || 0) + 1;
+      });
+
+      let onTrack = 0;
+      let atCapacity = 0;
+      let available = 0;
+
+      users.forEach((user) => {
+        const count = taskCount[user.id] || 0;
+
+        if (count === 0) {
+          available++;
+        } else if (count <= 3) {
+          onTrack++;
+        } else {
+          atCapacity++;
+        }
+      });
+
+      setMembers(users);
+
+      setStats({
+        totalMembers: users.length,
+        onTrack,
+        atCapacity,
+        available,
+      });
+    };
+
+    const unsubscribeUsers = onSnapshot(collection(db, "users"), (snapshot) => {
+      users = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      calculateStats();
+    });
+
+    const unsubscribeTasks = onSnapshot(collection(db, "tasks"), (snapshot) => {
+      tasks = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      calculateStats();
+    });
+
+    return () => {
+      unsubscribeUsers();
+      unsubscribeTasks();
+    };
+  }, []);
+
+ 
+  const statCards = [
+    {
+      key: "totalMembers",
+      label: "Total Members",
+      value: stats.totalMembers,
+      caption: "Registered members",
+      icon: <FiList className="h-5 w-5 text-blue-500" />,
+    },
+    {
+      key: "onTrack",
+      label: "On Track",
+      value: stats.onTrack,
+      caption: "Members with 1–3 tasks",
+      icon: <FiCheckCircle className="h-5 w-5 text-emerald-500" />,
+    },
+    {
+      key: "atCapacity",
+      label: "At Capacity",
+      value: stats.atCapacity,
+      caption: "Members with 4+ tasks",
+      icon: <FiClock className="h-5 w-5 text-yellow-500" />,
+    },
+    {
+      key: "available",
+      label: "Available",
+      value: stats.available,
+      caption: "Members without tasks",
+      icon: <FiUser className="h-5 w-5 text-cyan-500" />,
+    },
+  ];
+
   return (
     <>
-      {/* ── Page Header ── */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -26,12 +133,13 @@ export const Teams = () => {
         {isAdmin && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-150"
+            className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
             <span>+</span>
             Add Member
           </button>
         )}
+
         <Modal
           size="2xl"
           transition="fade"
@@ -42,69 +150,39 @@ export const Teams = () => {
         </Modal>
       </div>
 
-      {/* ── Stats Cards ── */}
+      {/* Dashboard Cards */}
       <section>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {/* Total Tasks */}
-          <div className="flex flex-col gap-3 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700 p-5">
-            <div className="flex items-center gap-2">
-              <FiList className="h-5 w-5 text-blue-500" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                Total Member
-              </span>
-            </div>
-            <span className="text-3xl font-bold text-gray-800 dark:text-white">
-              6
-            </span>
-            <span className="text-xs text-gray-400">All tasks</span>
-          </div>
+          {statCards.map((stat) => (
+            <Card
+              key={stat.key}
+              className="dark:bg-gray-800 dark:border-gray-700"
+              pt={{
+                body: { className: "p-0" },
+                content: { className: "p-5" },
+              }}
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  {stat.icon}
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                    {stat.label}
+                  </span>
+                </div>
 
-          {/* Completed */}
-          <div className="flex flex-col gap-3 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700 p-5">
-            <div className="flex items-center gap-2">
-              <FiCheckCircle className="h-5 w-5 text-emerald-500" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                On track
-              </span>
-            </div>
-            <span className="text-3xl font-bold text-gray-800 dark:text-white">
-              0
-            </span>
-            <span className="text-xs text-gray-400">0% rate</span>
-          </div>
+                <span className="text-3xl font-bold text-gray-800 dark:text-white">
+                  {stat.value}
+                </span>
 
-          {/* Pending */}
-          <div className="flex flex-col gap-3 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700 p-5">
-            <div className="flex items-center gap-2">
-              <FiClock className="h-5 w-5 text-yellow-500" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                At capacity
-              </span>
-            </div>
-            <span className="text-3xl font-bold text-gray-800 dark:text-white">
-              6
-            </span>
-            <span className="text-xs text-gray-400">To do tasks</span>
-          </div>
-
-          {/* Overdue */}
-          <div className="flex flex-col gap-3 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700 p-5">
-            <div className="flex items-center gap-2">
-              <FiAlertTriangle className="h-5 w-5 text-red-500" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                Pending Invites
-              </span>
-            </div>
-            <span className="text-3xl font-bold text-gray-800 dark:text-white">
-              0
-            </span>
-            <span className="text-xs font-semibold text-red-400">
-              Need action
-            </span>
-          </div>
+                <span className="text-xs text-gray-400">{stat.caption}</span>
+              </div>
+            </Card>
+          ))}
         </div>
       </section>
-      <div className="">
+
+      {/* Components */}
+      <div>
         <TeamDirectory />
         <WhosWorking />
       </div>

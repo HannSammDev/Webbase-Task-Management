@@ -1,72 +1,131 @@
-import { useState } from "react";
-
-const activities = [
-  {
-    id: 1,
-    user: "Gina May Lada",
-    action: "started the task",
-    task: "Frontend",
-    time: "10m ago",
-    type: "started",
-  },
-  {
-    id: 2,
-    user: "Sam",
-    action: "completed the task",
-    task: "API Integration",
-    time: "1h ago",
-    type: "completed",
-  },
-  {
-    id: 3,
-    user: "Sam",
-    action: "completed the task",
-    task: "API Integration",
-    time: "1h ago",
-    type: "completed",
-  },
-  {
-    id: 4,
-    user: "Sam",
-    action: "completed the task",
-    task: "API Integration",
-    time: "1h ago",
-    type: "completed",
-  },
-  {
-    id: 5,
-    user: "Aarnt McVenenn",
-    action: "has an overdue task",
-    task: "Database Schema",
-    time: "2 days ago",
-    type: "overdue",
-  },
-  {
-    id: 6,
-    user: "Canmta Limd",
-    action: "has an overdue task",
-    task: "UI Review",
-    time: "3 days ago",
-    type: "overdue",
-  },
-  {
-    id: 7,
-    user: "Daniet Ruan",
-    action: "missed the deadline",
-    task: "Backend Integration",
-    time: "5 days ago",
-    type: "overdue",
-  },
-];
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "../../Config/firebase";
+import { useAuth } from "../../Auth/useAuth";
 
 export const WhosWorking = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [liveMode, setLiveMode] = useState(false);
+  const [activity, setActivity] = useState([]);
+  const [usersMap, setUsersMap] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  const { isAdmin, user } = useAuth();
+
+  // format Firestore Timestamp / Date into "10m ago" style text
+  const timeAgo = (date) => {
+    if (!date) return "";
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
+  // fetch users once to build a uid -> { username, role } lookup map
+  useEffect(() => {
+    const usersRef = collection(db, "users");
+    const unsubscribeUsers = onSnapshot(usersRef, (snapshot) => {
+      const map = {};
+      snapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        map[doc.id] = {
+          username: data.username || data.name || doc.id,
+          role: data.role || "user",
+        };
+      });
+      setUsersMap(map);
+    });
+
+    return () => unsubscribeUsers();
+  }, []);
+
+  // fetch tasks and build activity feed
+  useEffect(() => {
+    const tasksRef = collection(db, "tasks");
+    const q = query(tasksRef, orderBy("createdAt", "desc"));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const now = new Date();
+
+        const mapped = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          const status = String(data.status || "").toLowerCase();
+
+          const createdAt = data.createdAt?.toDate
+            ? data.createdAt.toDate()
+            : null;
+          const dueDate = data.dueDate?.toDate ? data.dueDate.toDate() : null;
+
+          const isTodo = status.includes("todo") || status === "todo";
+          const isCompleted = status.includes("complete") || status === "done";
+          const isPastDue = dueDate ? dueDate.getTime() < now.getTime() : false;
+
+          const assignedUser = usersMap[data.assignedTo];
+          const isAssigneeAdmin = assignedUser?.role === "admin";
+          const assigneeName =
+            assignedUser?.username || data.assignedTo || "Someone";
+
+          let type = "started";
+          let action = "started the task";
+          let refDate = createdAt;
+
+          if (isCompleted) {
+            type = "completed";
+            action = "completed the task";
+          } else if (isPastDue) {
+            type = "overdue";
+            action = "has an overdue task";
+            refDate = dueDate; // gamitin due date bilang basehan ng "time ago"
+          } else if (status.includes("progress")) {
+            type = "started";
+            action = "started the task";
+          } else if (isTodo) {
+            type = "todo";
+            action =
+              isAdmin && !isAssigneeAdmin
+                ? `added a new task for ${assigneeName}`
+                : "added a new task";
+          }
+
+          return {
+            id: doc.id,
+            ...data,
+            user:
+              isAdmin && data.createdBy === user?.uid
+                ? "You"
+                : data.createdByName || data.createdBy || "Someone",
+            assignee: assigneeName,
+            task: data.title || "Untitled task",
+            dueDate,
+            createdAt,
+            type,
+            action,
+            time: timeAgo(refDate),
+          };
+        });
+
+        setActivity(mapped);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching activities:", error);
+        setLoading(false);
+      },
+    );
+
+    return () => unsubscribe();
+  }, [usersMap, isAdmin, user]);
 
   const filtered =
     activeTab === "overdue"
-      ? activities.filter((a) => a.type === "overdue")
-      : activities;
+      ? activity.filter((a) => a.type === "overdue")
+      : activity;
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 dark:bg-gray-800 dark:border-gray-700">
@@ -111,7 +170,9 @@ export const WhosWorking = () => {
 
       {/* ── Activity List ── */}
       <ul className="space-y-3">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <li className="text-sm text-gray-400 text-center py-4">Loading...</li>
+        ) : filtered.length === 0 ? (
           <li className="text-sm text-gray-400 text-center py-4">
             No activity found.
           </li>
