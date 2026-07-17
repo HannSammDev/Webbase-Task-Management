@@ -34,7 +34,7 @@ export const WhosWorking = () => {
         const data = doc.data();
         map[doc.id] = {
           username: data.username || data.name || doc.id,
-          role: data.role || "user",
+          role: data.userRole || "user",
         };
       });
       setUsersMap(map);
@@ -65,12 +65,10 @@ export const WhosWorking = () => {
           const isTodo = status.includes("todo") || status === "todo";
           const isCompleted = status.includes("complete") || status === "done";
           const isPastDue = dueDate ? dueDate.getTime() < now.getTime() : false;
-
           const assignedUser = usersMap[data.assignedTo];
           const isAssigneeAdmin = assignedUser?.role === "admin";
           const assigneeName =
             assignedUser?.username || data.assignedTo || "Someone";
-
           let type = "started";
           let action = "started the task";
           let refDate = createdAt;
@@ -81,16 +79,17 @@ export const WhosWorking = () => {
           } else if (isPastDue) {
             type = "overdue";
             action = "has an overdue task";
-            refDate = dueDate; // gamitin due date bilang basehan ng "time ago"
+            refDate = dueDate;
           } else if (status.includes("progress")) {
             type = "started";
             action = "started the task";
           } else if (isTodo) {
             type = "todo";
-            action =
-              isAdmin && !isAssigneeAdmin
-                ? `added a new task for ${assigneeName}`
-                : "added a new task";
+            action = isAdmin
+              ? isAssigneeAdmin
+                ? "added a new task"
+                : `added a new task for ${assigneeName}`
+              : "";
           }
 
           return {

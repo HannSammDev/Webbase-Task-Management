@@ -146,15 +146,7 @@ export const AddTaskForm = () => {
     }
   };
 
-  // const openDialog = () => {
-  //   if (!isAdmin && user?.uid) {
-  //     setAssignedTo(user.uid);
-  //   } else {
-  //     setAssignedTo("");
-  //   }
-
-  //   setVisible(true);
-  // };
+ 
 
   const dialogFooter = (
     <div className="flex justify-end gap-2">
@@ -183,11 +175,12 @@ export const AddTaskForm = () => {
 
       <Button
         onClick={openDialog}
+        // severity="secondary"
         icon="pi pi-plus"
         label="Add Task"
         size="small"
-        rounded
-        style={{ backgroundColor: "#93C5FD", color: "black", border: "none" }}
+
+        // style={{ backgroundColor: "#ffff", color: "black", border: "none" }}
       />
 
       <Dialog
