@@ -3,18 +3,17 @@ import { auth } from "../../Config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Button } from "primereact/button";
 import { Link, useNavigate } from "react-router-dom";
-import { FiMail, FiLock } from "react-icons/fi";
+import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import { getErrorLogin } from "../../Error/AuthErrorMessage";
 // import { Toast } from "primereact/toast";
 
 export const LoginForm = () => {
   const [value, setValue] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   // const toast = useRef(null)
- 
 
-  
   const handleSubmit = async (event) => {
     event.preventDefault();
     // navigate("/overview");
@@ -88,7 +87,7 @@ export const LoginForm = () => {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={value.password}
                   onChange={(e) =>
                     setValue({ ...value, password: e.target.value })
@@ -97,6 +96,18 @@ export const LoginForm = () => {
                   className="flex-1 bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none dark:text-white"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-400 focus:outline-none"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <FiEyeOff className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <FiEye className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -122,8 +133,6 @@ export const LoginForm = () => {
               size="small"
               style={{ width: "100%" }}
             />
-
-            
           </form>
         </div>
       </div>

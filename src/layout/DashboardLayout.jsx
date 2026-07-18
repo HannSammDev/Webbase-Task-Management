@@ -27,7 +27,7 @@ const primaryLinks = [
 const secondaryLinks = [
   // { to: "/project", icon: FiArchive, label: "Project" },
   { to: "/team", icon: FiUsers, label: "Team" },
-  { to: "/notifications", icon: FiBell, label: "Notifications", badge: 3 },
+  { to: "/message", icon: FiBell, label: "Messages", badge: 3 },
 ];
 
 export const DashboardLayout = () => {
@@ -202,7 +202,7 @@ export const DashboardLayout = () => {
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
         >
           {showLogo && (
-            <div className="flex items-center gap-3 px-3 py-4 border-b border-blue-600">
+            <div className="flex items-center gap-3 px-3 py-3 border-b border-blue-600">
               <img
                 src="./logo2.png"
                 className="h-10 rounded-full border-2 border-white"

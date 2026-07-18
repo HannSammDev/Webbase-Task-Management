@@ -4,11 +4,16 @@ import { FaUserCircle } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import { db } from "../../Config/firebase";
 import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../Auth/useAuth";
 
 export const TeamDirectory = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const [members, setMembers] = useState([]);
   const [deletingId, setDeletingId] = useState(null);
+
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const membersRef = collection(db, "users");
@@ -24,7 +29,7 @@ export const TeamDirectory = () => {
         ).length;
         return { ...member, activeTasks: taskCount };
       });
-     
+
       setMembers(merged);
     };
 
@@ -36,9 +41,7 @@ export const TeamDirectory = () => {
           ...doc.data(),
         }));
 
-      membersData.sort((a, b) =>
-        (a.date || "").localeCompare(b.date || ""),
-      );
+        membersData.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
         // setMembers(membersData);
         mergeAndSetMembers();
       },
@@ -200,6 +203,7 @@ export const TeamDirectory = () => {
                                   );
                                 } else if (action === "View profile") {
                                   // Navigate to profile page or show profile modal
+                                  navigate(`/aac/${user.uid}`);
                                 } else if (action === "Assign task") {
                                   // Navigate to assign task page or show assign task modal
                                 }

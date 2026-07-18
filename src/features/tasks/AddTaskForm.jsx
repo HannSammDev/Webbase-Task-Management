@@ -175,12 +175,10 @@ export const AddTaskForm = () => {
 
       <Button
         onClick={openDialog}
-        // severity="secondary"
+        severity="info"
         icon="pi pi-plus"
         label="Add Task"
-        size="small"
-
-        // style={{ backgroundColor: "#ffff", color: "black", border: "none" }}
+        size="small"       
       />
 
       <Dialog
