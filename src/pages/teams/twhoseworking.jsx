@@ -1,7 +1,8 @@
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../../Config/firebase";
-import { useAuth } from "../../Auth/useAuth";
+import { useAuth } from "../../Hooks/useAuth";
+import { timeAgo } from "../../Composable/timeago";
 
 export const WhosWorking = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -12,18 +13,6 @@ export const WhosWorking = () => {
 
   const { isAdmin, user } = useAuth();
 
-  // format Firestore Timestamp / Date into "10m ago" style text
-  const timeAgo = (date) => {
-    if (!date) return "";
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
 
   // fetch users once to build a uid -> { username, role } lookup map
   useEffect(() => {

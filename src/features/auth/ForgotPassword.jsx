@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { sendPasswordResetEmail } from "firebase/auth";
-import { collection, getDocs } from "firebase/firestore";
 import {
   FiAlertCircle,
   FiArrowLeft,
@@ -8,8 +7,7 @@ import {
   FiMail,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
-
-import { auth, db } from "../../Config/firebase";
+import { auth } from "../../Config/firebase";
 import { getResetErrorMessage } from "../../Error/AuthErrorMessage";
 import { Button } from "primereact/button";
 
@@ -23,35 +21,23 @@ export const ForgotPassword = () => {
     event.preventDefault();
     setError("");
     setMessage("");
-    setLoading(true);
 
     const trimmedEmail = email.trim();
-    const normalizedEmail = trimmedEmail.toLowerCase();
+
+    if (!trimmedEmail) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      if (!trimmedEmail) {
-        setError("Please enter your email address.");
-        return;
-      }
-
-      // Firebase can resolve password-reset requests even for unknown emails,
-      // so we check the app's stored users first and show a real not-found error.
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      const matchingUser = usersSnapshot.docs.find((userDoc) => {
-        const userEmail = String(userDoc.data()?.email || "")
-          .trim()
-          .toLowerCase();
-
-        return userEmail === normalizedEmail;
-      });
-
-      if (!matchingUser) {
-        setError("No account found with that email address.");
-        return;
-      }
-
+      // Let Firebase Auth handle the lookup directly — no Firestore read needed.
+      // This also avoids leaking which emails are registered in your system.
       await sendPasswordResetEmail(auth, trimmedEmail);
-      setMessage("Reset link has been sent.");
+      setMessage(
+        "Reset link has been sent.",
+      );
     } catch (err) {
       console.error("Reset password error:", err);
       setError(getResetErrorMessage(err));
@@ -133,6 +119,7 @@ export const ForgotPassword = () => {
                   <p>{message}</p>
                 </div>
               )}
+
               <Button
                 size="small"
                 severity="info"
@@ -141,14 +128,6 @@ export const ForgotPassword = () => {
                 disabled={loading}
                 className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
               />
-
-              {/* <button
-                type="submit"
-                disabled={loading}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {loading ? "Sending..." : "Send reset link"}
-              </button> */}
             </form>
           </div>
         </div>

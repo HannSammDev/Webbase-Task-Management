@@ -4,8 +4,8 @@ import { LoginForm } from "../../features/auth/LoginForm";
 export const LandingPage = () => {
   return (
     <div className="min-h-screen w-full bg-slate-50 dark:bg-white text-slate-900  dark:text-white">
-      <div className="mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row">
-        <section className="relative  flex-1 overflow-hidden bg-gradient-to-br from-sky-600 via-blue-700 to-indigo-800 px-8 py-16 text-white md:flex md:flex-col md:justify-center">
+      <div className="mx-auto flex min-h-screen max-w-full flex-col md:flex-row">
+        <div className="relative  flex-1 overflow-hidden bg-linear-to-br from-sky-600 via-blue-700 to-indigo-800 px-8 py-16 text-white md:flex md:flex-col md:justify-center">
           <div className="relative z-10 max-w-xl space-y-6 backdrop-blur-sm">
             <div className="inline-flex w-80 items-center gap-3 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-white/90 shadow-lg shadow-black/10">
               <img
@@ -39,10 +39,15 @@ export const LandingPage = () => {
               </li>
             </ul>
           </div>
-        </section>
+          {/* <div className="flex justify-end "> 
+            <a href="" className="text-sm ">
+              Login
+            </a>
+          </div> */}
+        </div>
 
-        <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
-          <div className="w-full max-w-xl rounded-[2rem] bg-white dark:bg-white p-6 shadow-2xl shadow-slate-900/5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-white/10 sm:p-10">
+        <main className="flex flex-1 items-center justify-center px-4 py-3 sm:px-6 lg:px-8">
+          <div className="w-full max-w-xl rounded-4xl bg-white dark:bg-white p-6 shadow-2xl shadow-slate-900/5 ring-1 ring-slate-200  dark:ring-white/10 sm:p-10">
             <LoginForm />
           </div>
         </main>

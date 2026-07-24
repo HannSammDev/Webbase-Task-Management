@@ -5,7 +5,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { db } from "../../Config/firebase";
 import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../Auth/useAuth";
+import { useAuth } from "../../Hooks/useAuth";
 
 export const TeamDirectory = () => {
   const [openMenu, setOpenMenu] = useState(null);

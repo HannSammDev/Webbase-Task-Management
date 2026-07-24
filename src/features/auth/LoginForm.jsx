@@ -16,7 +16,6 @@ export const LoginForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // navigate("/overview");
     try {
       await signInWithEmailAndPassword(auth, value.email, value.password);
       navigate("/overview");

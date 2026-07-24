@@ -11,7 +11,7 @@ import {
 
 import { TabView, TabPanel } from "primereact/tabview";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { useAuth } from "../../Auth/useAuth";
+import { useAuth } from "../../Hooks/useAuth";
 
 // ─── Firestore status values → internal column ids ────────────────────────────
 // These strings must exactly match what you store in Firestore's "status" field

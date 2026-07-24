@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { addDoc, collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../Config/firebase";
-import { useAuth } from "../../Auth/useAuth";
+import { useAuth } from "../../Hooks/useAuth";
 
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
@@ -146,8 +146,6 @@ export const AddTaskForm = () => {
     }
   };
 
- 
-
   const dialogFooter = (
     <div className="flex justify-end gap-2">
       <Button
@@ -178,7 +176,7 @@ export const AddTaskForm = () => {
         severity="info"
         icon="pi pi-plus"
         label="Add Task"
-        size="small"       
+        size="small"
       />
 
       <Dialog

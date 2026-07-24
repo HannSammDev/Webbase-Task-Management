@@ -18,7 +18,7 @@ import {
   FiPlusCircle,
   FiArrowRightCircle,
 } from "react-icons/fi";
-import { useAuth } from "../../Auth/useAuth";
+import { useAuth } from "../../Hooks/useAuth";
 
 export const RecentActivity = () => {
   const [recentTasks, setRecentTasks] = useState([]);

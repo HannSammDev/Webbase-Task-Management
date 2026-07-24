@@ -12,8 +12,8 @@ import { Calendar } from "./features/tasks/Calendar";
 import { Test } from "./pages/test";
 import { RegisterForm } from "./features/auth/RegisterForm";
 import { ForgotPassword } from "./features/auth/ForgotPassword";
-import { AuthProvider } from "./Auth/AuthContext.jsx";
-import { ProtectedRoute } from "./Auth/ProtectedRoute";
+import { AuthProvider } from "./Hooks/AuthContext.jsx";
+import { ProtectedRoute } from "./Hooks/ProtectedRoute.jsx";
 import { Teams } from "./pages/teams/teams";
 
 const App = () => (

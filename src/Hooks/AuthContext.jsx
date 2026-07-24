@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { httpsCallable } from "firebase/functions";
-import { auth, db, functions } from "../Config/firebase";
+import { auth, db } from "../Config/firebase"; 
 import { AuthContext } from "./authContext";
 
 export const AuthProvider = ({ children }) => {
@@ -29,30 +28,14 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe; // cleanup on unmount
   }, []);
 
-  const removeMember = async (uid) => {
-    try {
-      const deleteUserAccount = httpsCallable(functions, "deleteUserAccount");
-      const result = await deleteUserAccount({ uid });
-      console.log("Removed member:", result.data);
-      return result.data;
-    } catch (error) {
-      console.error("removeMember failed:", error.code, error.message);
-      throw error;
-    }
-  };
-
   const logout = async () => {
     await signOut(auth);
     setUser(null);
     setUserData(null);
   };
-
   const isAdmin = userData?.userRole === "admin";
-
   return (
-    <AuthContext.Provider
-      value={{ user, userData, isAdmin, removeMember, logout }}
-    >
+    <AuthContext.Provider value={{ user, userData, isAdmin, logout }}>
       {user === undefined ? null : children}
     </AuthContext.Provider>
   );

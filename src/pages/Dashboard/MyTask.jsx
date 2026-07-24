@@ -9,7 +9,7 @@ import {
   where,
 } from "firebase/firestore";
 
-import { useAuth } from "../../Auth/useAuth";
+import { useAuth } from "../../Hooks/useAuth";
 
 const getPriorityBadge = (priority) => {
   switch (priority?.toLowerCase()) {

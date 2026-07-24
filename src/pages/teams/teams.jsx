@@ -6,7 +6,7 @@ import { TeamDirectory } from "./teamDerictory";
 import { WhosWorking } from "./twhoseworking";
 import { Modal } from "../../components/shared/Modal";
 import { RegisterForm } from "../../features/auth/RegisterForm";
-import { useAuth } from "../../Auth/useAuth";
+import { useAuth } from "../../Hooks/useAuth";
 import { db } from "../../Config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 
@@ -88,7 +88,6 @@ export const Teams = () => {
     };
   }, []);
 
- 
   const statCards = [
     {
       key: "totalMembers",

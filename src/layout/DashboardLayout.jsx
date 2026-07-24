@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useAuth } from "../Auth/useAuth";
+import { useAuth } from "../Hooks/useAuth";
 import { auth } from "../Config/firebase";
 import { signOut } from "firebase/auth";
 import {
